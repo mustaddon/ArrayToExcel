@@ -14,9 +14,10 @@ var items = Enumerable.Range(1, 10).Select(x => new
 var excel = items.ToExcel();
 ```
 
+[example1.xlsx](Examples/example1.xlsx?raw=true)
+
 ![](/Examples/example1.png)
 
-[example1.xlsx](Examples/example1.xlsx?raw=true)
 
 ### Example #2
 
@@ -27,8 +28,9 @@ var excel = items.ToExcel(x => x
     .AddColumn("MyColumnName#3", x => x.Prop3));
 ```
 
+[example2.xlsx](Examples/example2.xlsx?raw=true)
+
 ![](/Examples/example2.png)
 
-[example2.xlsx](Examples/example2.xlsx?raw=true)
 
 [More info in the test console application...](TestConsoleApp/Program.cs)
