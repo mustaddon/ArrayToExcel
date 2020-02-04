@@ -22,7 +22,7 @@ var excel = items.ToExcel();
 ### Example #2
 
 ```C#
-var excel = items.ToExcel(x => x
+var excel = items.ToExcel(scheme => scheme
     .AddColumn("MyColumnName#1", x => x.Prop1)
     .AddColumn("MyColumnName#2", x => $"test:{x.Prop2}")
     .AddColumn("MyColumnName#3", x => x.Prop3));
