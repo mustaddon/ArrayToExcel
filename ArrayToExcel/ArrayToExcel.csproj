@@ -13,12 +13,12 @@
     <Company></Company>
     <Authors>Leonid Salavatov</Authors>
     <Copyright>Leonid Salavatov 2020</Copyright>
+    <PackageId>ArrayToExcel</PackageId>
     <Product>ArrayToExcel</Product>
     <Title>ArrayToExcel</Title>
     <Description>Create Excel from Array</Description>
     <PackageTags>array excel xlsx array2excel arraytoexcel convert map mapping c# csharp</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageLicenseUrl>https://licenses.nuget.org/MIT</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/mustaddon/ArrayToExcel</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mustaddon/ArrayToExcel</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
