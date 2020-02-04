@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArrayToExcel", "ArrayToExcel\ArrayToExcel.csproj", "{5BB42743-A84D-410C-A4E5-B612EF2AD5F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsoleApp", "TestConsoleApp\TestConsoleApp.csproj", "{EDF8441E-1620-4DC1-A60A-FD7ADCAE15FD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5BB42743-A84D-410C-A4E5-B612EF2AD5F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BB42743-A84D-410C-A4E5-B612EF2AD5F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BB42743-A84D-410C-A4E5-B612EF2AD5F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BB42743-A84D-410C-A4E5-B612EF2AD5F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDF8441E-1620-4DC1-A60A-FD7ADCAE15FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDF8441E-1620-4DC1-A60A-FD7ADCAE15FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDF8441E-1620-4DC1-A60A-FD7ADCAE15FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDF8441E-1620-4DC1-A60A-FD7ADCAE15FD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {529DE01C-BB83-4F8D-9582-50BD84C99DE0}
+	EndGlobalSection
+EndGlobal
