@@ -15,6 +15,7 @@ var excel = items.ToExcel();
 ```
 
 ![](/Examples/example1.png)
+
 [example1.xlsx](Examples/example1.xlsx?raw=true)
 
 ### Example #2
@@ -27,6 +28,7 @@ var excel = items.ToExcel(x => x
 ```
 
 ![](/Examples/example2.png)
+
 [example2.xlsx](Examples/example2.xlsx?raw=true)
 
 [More info in the test console application...](TestConsoleApp/Program.cs)
