@@ -13,10 +13,10 @@ namespace RandomSolutions
 {
     public class ArrayToExcel
     {
-        public static byte[] CreateExcel<T>(IEnumerable<T> items, Action<ArrayToExcelScheme<T>> schemeBuilder)
+        public static byte[] CreateExcel<T>(IEnumerable<T> items, Action<ArrayToExcelScheme<T>> schemeBuilder = null)
         {
             var scheme = new ArrayToExcelScheme<T>();
-            schemeBuilder.Invoke(scheme);
+            schemeBuilder?.Invoke(scheme);
             return _createExcel(items, scheme);
         }
 
