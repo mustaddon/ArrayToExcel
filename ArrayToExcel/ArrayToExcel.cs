@@ -13,24 +13,6 @@ namespace RandomSolutions
 {
     public class ArrayToExcel
     {
-        public static byte[] CreateExcel<T>(IEnumerable<T> items)
-        {
-            return CreateExcel(items, scheme =>
-            {
-                var members = typeof(T).GetMembers(BindingFlags.Instance | BindingFlags.Public)
-                    .Where(x => x is PropertyInfo || x is FieldInfo);
-
-                foreach(var member in members)
-                    scheme.AddColumn(member.Name, new Func<T, object>(x => (member as PropertyInfo)?.GetValue(x) ?? (member as FieldInfo)?.GetValue(x)));
-            });
-        }
-
-        public static byte[] CreateExcel<T>(IEnumerable<T> items, Dictionary<string, Func<T, object>> columns)
-        {
-            var scheme = new ArrayToExcelScheme<T>(columns);
-            return _createExcel(items, scheme);
-        }
-
         public static byte[] CreateExcel<T>(IEnumerable<T> items, Action<ArrayToExcelScheme<T>> schemeBuilder)
         {
             var scheme = new ArrayToExcelScheme<T>();
@@ -55,7 +37,7 @@ namespace RandomSolutions
                     {
                         Id = document.WorkbookPart.GetIdOfPart(worksheetPart),
                         SheetId = 1,
-                        Name = "Sheet1"
+                        Name = _normSheetName(scheme.SheetName) ?? "Sheet1"
                     });
 
                     _addStyles(document);
@@ -63,7 +45,7 @@ namespace RandomSolutions
                     if (scheme.Columns.Count > 0)
                     {
                         var cols = worksheetPart.Worksheet.AppendChild(new Columns());
-                        cols.Append(scheme.Columns.Select(x => new Column() { Min = (uint)(x.Index+1), Max = (uint)(x.Index+1), Width = x.Width, CustomWidth = true, BestFit = true }));
+                        cols.Append(scheme.Columns.Select(x => new Column() { Min = (uint)(x.Index + 1), Max = (uint)(x.Index + 1), Width = x.Width, CustomWidth = true, BestFit = true }));
 
                         var rows = _getRows(items, scheme.Columns);
                         var sheetData = worksheetPart.Worksheet.AppendChild(new SheetData());
@@ -78,7 +60,10 @@ namespace RandomSolutions
             }
         }
 
-
+        static string _normSheetName(string value)
+        {
+            return value?.Length > 31 ? value.Substring(0, 28) + "..." : value;
+        }
 
         static void _addStyles(SpreadsheetDocument document)
         {
@@ -194,7 +179,7 @@ namespace RandomSolutions
 
             return new CellValue(value.ToString());
         }
-        
+
         static CellValues _getCellType(object value)
         {
             var type = value?.GetType();

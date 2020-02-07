@@ -14,6 +14,7 @@ var items = Enumerable.Range(1, 10).Select(x => new
 var excel = items.ToExcel();
 ```
 
+Result:
 [example1.xlsx](Examples/example1.xlsx?raw=true)
 
 ![](/Examples/example1.png)
@@ -28,6 +29,7 @@ var excel = items.ToExcel(scheme => scheme
     .AddColumn("MyColumnName#3", x => x.Prop3));
 ```
 
+Result:
 [example2.xlsx](Examples/example2.xlsx?raw=true)
 
 ![](/Examples/example2.png)
