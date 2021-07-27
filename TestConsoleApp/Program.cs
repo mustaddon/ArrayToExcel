@@ -60,7 +60,7 @@ namespace TestConsoleApp
                 Decimal = 1.1m + x,
                 DateTime = DateTime.Now.AddDays(-x),
                 DateTimeOffset = DateTimeOffset.Now.AddDays(-x),
-                String = $"text text text #{x}",
+                String = $"text text text #{x} !!!",
             });
 
             //var data = items.ToExcel("Test!");

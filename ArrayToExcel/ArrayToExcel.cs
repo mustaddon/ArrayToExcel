@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace RandomSolutions
 {
@@ -177,7 +178,14 @@ namespace RandomSolutions
             if (type == typeof(float))
                 return new CellValue(((float)value).ToString(_cultureInfo));
 
-            return new CellValue(value.ToString());
+            return new CellValue(_removeInvalidXmlChars(value.ToString()));
+        }
+
+        static string _removeInvalidXmlChars(string text)
+        {
+            return string.IsNullOrEmpty(text) ? text
+                : new Regex(@"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]", RegexOptions.Compiled)
+                    .Replace(text, string.Empty);
         }
 
         static CellValues _getCellType(object value)
