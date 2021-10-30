@@ -15,7 +15,7 @@ var excel = items.ToExcel();
 ```
 
 Result:
-[example1.xlsx](https://raw.githubusercontent.com/mustaddon/ArrayToExcel/master/Examples/example1.xlsx?raw=true)
+[example1.xlsx](https://github.com/mustaddon/ArrayToExcel/raw/master/Examples/example1.xlsx)
 
 ![](https://raw.githubusercontent.com/mustaddon/ArrayToExcel/master/Examples/example1.png)
 
@@ -30,7 +30,7 @@ var excel = items.ToExcel(scheme => scheme
 ```
 
 Result:
-[example2.xlsx](https://raw.githubusercontent.com/mustaddon/ArrayToExcel/master/Examples/example2.xlsx?raw=true)
+[example2.xlsx](https://github.com/mustaddon/ArrayToExcel/raw/master/Examples/example2.xlsx)
 
 ![](https://raw.githubusercontent.com/mustaddon/ArrayToExcel/master/Examples/example2.png)
 
