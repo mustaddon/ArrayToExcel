@@ -1,7 +1,7 @@
 # ArrayToExcel [![NuGet version](https://badge.fury.io/nu/ArrayToExcel.svg)](http://badge.fury.io/nu/ArrayToExcel)
 Create Excel from Array
 
-### Example 1: Create excel with default settings
+### Example 1: Create with default settings
 ```C#
 using ArrayToExcel;
 

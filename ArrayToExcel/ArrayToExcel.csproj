@@ -15,7 +15,7 @@
     <PackageId>ArrayToExcel</PackageId>
     <Product>ArrayToExcel</Product>
     <Title>ArrayToExcel</Title>
-    <Description>.NET Create Excel from Array</Description>
+    <Description>Create Excel from Array</Description>
     <PackageTags>array excel xlsx array2excel arraytoexcel convert map mapping dotnet</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/mustaddon/ArrayToExcel</PackageProjectUrl>
