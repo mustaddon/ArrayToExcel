@@ -1,23 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
-    <AssemblyName>RandomSolutions.ArrayToExcel</AssemblyName>
-    <RootNamespace>RandomSolutions</RootNamespace>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>key.pfx</AssemblyOriginatorKeyFile>
-
-    <AssemblyVersion>1.0.2</AssemblyVersion>
-    <FileVersion>1.0.2</FileVersion>
-    <Version>1.0.2</Version>
-    <Company></Company>
+    <TargetFrameworks>net45;netstandard2.0;netstandard2.1</TargetFrameworks>
+	<LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\ArrayToExcel.snk</AssemblyOriginatorKeyFile>
+	<AssemblyVersion>2.0.0</AssemblyVersion>
+    <FileVersion>2.0.0</FileVersion>
+    <Version>2.0.0</Version>
+	<Company></Company>
     <Authors>Leonid Salavatov</Authors>
     <Copyright>Leonid Salavatov 2021</Copyright>
     <PackageId>ArrayToExcel</PackageId>
     <Product>ArrayToExcel</Product>
     <Title>ArrayToExcel</Title>
-    <Description>Create Excel from Array</Description>
-    <PackageTags>array excel xlsx array2excel arraytoexcel convert map mapping c# csharp</PackageTags>
+    <Description>.NET Create Excel from Array</Description>
+    <PackageTags>array excel xlsx array2excel arraytoexcel convert map mapping dotnet</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/mustaddon/ArrayToExcel</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mustaddon/ArrayToExcel</RepositoryUrl>

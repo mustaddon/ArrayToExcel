@@ -2,26 +2,25 @@
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 
-namespace RandomSolutions
+namespace ArrayToExcel
 {
     public class ArrayToExcel
     {
-        public static byte[] CreateExcel<T>(IEnumerable<T> items, Action<ArrayToExcelScheme<T>> schemeBuilder = null)
+        public static byte[] CreateExcel<T>(IEnumerable<T> items, Action<SchemaBuilder<T>>? schema = null)
         {
-            var scheme = new ArrayToExcelScheme<T>();
-            schemeBuilder?.Invoke(scheme);
-            return _createExcel(items, scheme);
+            var builder = new SchemaBuilder<T>(items);
+            schema?.Invoke(builder);
+            return _createExcel(builder.SheetSchemas);
         }
 
-        static byte[] _createExcel<T>(IEnumerable<T> items, ArrayToExcelScheme<T> scheme)
+        static byte[] _createExcel(List<SheetSchema> sheetSchemas)
         {
             using (var ms = new MemoryStream())
             {
@@ -30,29 +29,35 @@ namespace RandomSolutions
                     var workbookpart = document.AddWorkbookPart();
                     workbookpart.Workbook = new Workbook();
 
-                    var worksheetPart = workbookpart.AddNewPart<WorksheetPart>();
-                    worksheetPart.Worksheet = new Worksheet();
-
                     var sheets = document.WorkbookPart.Workbook.AppendChild(new Sheets());
-                    sheets.Append(new Sheet()
-                    {
-                        Id = document.WorkbookPart.GetIdOfPart(worksheetPart),
-                        SheetId = 1,
-                        Name = _normSheetName(scheme.SheetName) ?? "Sheet1"
-                    });
 
                     _addStyles(document);
 
-                    if (scheme.Columns.Count > 0)
+                    var sheetId = 1u;
+
+                    foreach (var sheetSchema in sheetSchemas)
                     {
-                        var cols = worksheetPart.Worksheet.AppendChild(new Columns());
-                        cols.Append(scheme.Columns.Select(x => new Column() { Min = (uint)(x.Index + 1), Max = (uint)(x.Index + 1), Width = x.Width, CustomWidth = true, BestFit = true }));
+                        var worksheetPart = workbookpart.AddNewPart<WorksheetPart>();
+                        worksheetPart.Worksheet = new Worksheet();
 
-                        var rows = _getRows(items, scheme.Columns);
-                        var sheetData = worksheetPart.Worksheet.AppendChild(new SheetData());
-                        sheetData.Append(rows);
+                        sheets.Append(new Sheet()
+                        {
+                            Id = document.WorkbookPart.GetIdOfPart(worksheetPart),
+                            SheetId = sheetId++,
+                            Name = _normSheetName(sheetSchema.SheetName),
+                        });
 
-                        worksheetPart.Worksheet.Append(new AutoFilter() { Reference = $"A1:{_getColReference(scheme.Columns.Count - 1)}{rows.Length}" });
+                        if (sheetSchema.Columns.Count > 0)
+                        {
+                            var cols = worksheetPart.Worksheet.AppendChild(new Columns());
+                            cols.Append(sheetSchema.Columns.Select((x, i) => new Column() { Min = (uint)(i + 1), Max = (uint)(i + 1), Width = x.Width, CustomWidth = true, BestFit = true }));
+
+                            var rows = _getRows(sheetSchema.Items, sheetSchema.Columns);
+                            var sheetData = worksheetPart.Worksheet.AppendChild(new SheetData());
+                            sheetData.Append(rows);
+
+                            worksheetPart.Worksheet.Append(new AutoFilter() { Reference = $"A1:{_getColReference(sheetSchema.Columns.Count - 1)}{rows.Length}" });
+                        }
                     }
 
                     workbookpart.Workbook.Save();
@@ -63,7 +68,7 @@ namespace RandomSolutions
 
         static string _normSheetName(string value)
         {
-            return value?.Length > 31 ? value.Substring(0, 28) + "..." : value;
+            return value.Length > 31 ? value.Substring(0, 28) + "..." : value;
         }
 
         static void _addStyles(SpreadsheetDocument document)
@@ -115,13 +120,13 @@ namespace RandomSolutions
             stylesPart.Stylesheet.Save();
         }
 
-        static Row[] _getRows<T>(IEnumerable<T> items, List<ArrayToExcelScheme<T>.Column> columns)
+        static Row[] _getRows(IEnumerable items, List<ColumnSchema> columns)
         {
             var rows = new List<Row>();
 
-            var headerCells = columns.Select(x => new Cell
+            var headerCells = columns.Select((x, i) => new Cell
             {
-                CellReference = _getColReference(x.Index),
+                CellReference = _getColReference(i),
                 CellValue = new CellValue(x.Name),
                 DataType = CellValues.String,
                 StyleIndex = 1,
@@ -135,14 +140,14 @@ namespace RandomSolutions
             foreach (var item in items)
             {
                 var row = new Row() { RowIndex = (uint)i++ };
-                var cells = columns.Select(x => _getCell(headerCells[x.Index].CellReference, x.ValueFn(item))).ToArray();
+                var cells = columns.Select((x, i) => _getCell(headerCells[i].CellReference, x.Value?.Invoke(item))).ToArray();
                 row.Append(cells);
                 rows.Add(row);
             }
             return rows.ToArray();
         }
 
-        static Cell _getCell(string reference, object value)
+        static Cell _getCell(string reference, object? value)
         {
             var dataType = _getCellType(value);
             return new Cell
@@ -154,7 +159,7 @@ namespace RandomSolutions
             };
         }
 
-        static CellValue _getCellValue(object value)
+        static CellValue _getCellValue(object? value)
         {
             if (value == null) return new CellValue();
 
@@ -188,9 +193,9 @@ namespace RandomSolutions
                     .Replace(text, string.Empty);
         }
 
-        static CellValues _getCellType(object value)
+        static CellValues _getCellType(object? value)
         {
-            var type = value?.GetType();
+            var type = value?.GetType() ?? typeof(object);
 
             if (type == typeof(bool))
                 return CellValues.Boolean;
