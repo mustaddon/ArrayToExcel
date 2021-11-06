@@ -16,6 +16,7 @@ var excel = items.ToExcel();
 ```
 Result:
 [example1.xlsx](https://github.com/mustaddon/ArrayToExcel/raw/master/Examples/example1.xlsx)
+
 ![](https://raw.githubusercontent.com/mustaddon/ArrayToExcel/master/Examples/example1.png)
 
 
@@ -27,6 +28,7 @@ var excel = items.ToExcel(schema => schema
 ```
 Result:
 [example2.xlsx](https://github.com/mustaddon/ArrayToExcel/raw/master/Examples/example2.xlsx)
+
 ![](https://raw.githubusercontent.com/mustaddon/ArrayToExcel/master/Examples/example2.png)
 
 
@@ -37,6 +39,7 @@ var excel = items.ToExcel(schema => schema
 ```
 Result:
 [example3.xlsx](https://github.com/mustaddon/ArrayToExcel/raw/master/Examples/example3.xlsx)
+
 ![](https://raw.githubusercontent.com/mustaddon/ArrayToExcel/master/Examples/example3.png)
 
 
@@ -49,6 +52,7 @@ var excel = items.ToExcel(schema => schema
 ```
 Result:
 [example4.xlsx](https://github.com/mustaddon/ArrayToExcel/raw/master/Examples/example4.xlsx)
+
 ![](https://raw.githubusercontent.com/mustaddon/ArrayToExcel/master/Examples/example4.png)
 
 
@@ -60,6 +64,7 @@ var excel = items.ToExcel(schema => schema
 ```
 Result:
 [example5.xlsx](https://github.com/mustaddon/ArrayToExcel/raw/master/Examples/example5.xlsx)
+
 ![](https://raw.githubusercontent.com/mustaddon/ArrayToExcel/master/Examples/example5.png)
 
 
