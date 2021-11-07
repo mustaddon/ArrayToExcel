@@ -178,7 +178,9 @@ namespace ConsoleApp
             foreach (var x in Enumerable.Range(1, 100))
                 table.Rows.Add($"Text #{x}", x * 1000, DateTime.Now.AddDays(-x));
 
-            var excel = table.ToExcel();
+            var excel = table.ToExcel(s => s
+                .AddSheet(table, ss => ss.SheetName("Table2"))
+                .AddSheet(SomeItems));
 
             File.WriteAllBytes($@"..\{nameof(TestDataTable)}.xlsx", excel);
         }

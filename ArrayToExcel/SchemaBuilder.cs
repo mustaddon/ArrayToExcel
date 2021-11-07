@@ -6,103 +6,40 @@ using System.Reflection;
 
 namespace ArrayToExcel
 {
-    public class SchemaBuilder<T>
+    public sealed class SchemaBuilder<T>
     {
-        public SchemaBuilder(IEnumerable items)
+        internal SchemaBuilder(IEnumerable items, List<SheetSchema>? parentChilds = null)
         {
-            _rootSheetBuilder = new(DefaultSheetName(), items);
-            SheetSchemas.Add(_rootSheetBuilder.Schema);
-        }
-
-        private readonly SheetSchemaBuilder<T> _rootSheetBuilder;
-
-        internal List<SheetSchema> SheetSchemas { get; } = new();
-
-        private string DefaultSheetName() => $"Sheet{SheetSchemas.Count + 1}";
-
-        public SchemaBuilder<T> AddSheet<TList>(IEnumerable<TList> list, Action<SheetSchemaBuilder<TList>>? schema = null)
-        {
-            var builder = new SheetSchemaBuilder<TList>(DefaultSheetName(), list);
-            schema?.Invoke(builder);
-            SheetSchemas.Add(builder.Schema);
-            return this;
-        }
-
-        public SchemaBuilder<T> SheetName(string name)
-        {
-            _rootSheetBuilder.SheetName(name);
-            return this;
-        }
-
-        public SchemaBuilder<T> ColumnName(Func<ColumnInfo, string> name)
-        {
-            _rootSheetBuilder.ColumnName(name);
-            return this;
-        }
-
-        public SchemaBuilder<T> ColumnWidth(Func<ColumnInfo, uint> width)
-        {
-            _rootSheetBuilder.ColumnWidth(width);
-            return this;
-        }
-
-        public SchemaBuilder<T> ColumnFilter(Func<ColumnInfo, bool> filter)
-        {
-            _rootSheetBuilder.ColumnFilter(filter);
-            return this;
-        }
-
-        public SchemaBuilder<T> ColumnSort<TKey>(Func<ColumnInfo, TKey> sort, bool desc = false)
-        {
-            _rootSheetBuilder.ColumnSort(sort, desc);
-            return this;
-        }
-
-        public SchemaBuilder<T> ColumnValue(Func<ColumnInfo, T, object?> value)
-        {
-            _rootSheetBuilder.ColumnValue(value);
-            return this;
-        }
-
-        public SchemaBuilder<T> AddColumn(string name, Func<T, object?> value, uint width = ColumnSchema.DefaultWidth)
-        {
-            _rootSheetBuilder.AddColumn(name, value, width);
-            return this;
-        }
-    }
-
-    public class SheetSchemaBuilder<T>
-    {
-        public SheetSchemaBuilder(string sheetName, IEnumerable items)
-        {
-            Schema = new(sheetName, DefaultColumns(items), items);
+            Childs = parentChilds ?? new();
+            Schema = new($"Sheet{(parentChilds?.Count + 2) ?? 1}", DefaultColumns(items), items);
         }
 
         private bool _defaultCols = true;
 
         internal SheetSchema Schema { get; }
+        internal List<SheetSchema> Childs { get; }
 
-        public SheetSchemaBuilder<T> SheetName(string name)
+        public SchemaBuilder<T> SheetName(string name)
         {
             Schema.SheetName = name;
             return this;
         }
 
-        public SheetSchemaBuilder<T> ColumnName(Func<ColumnInfo, string> name)
+        public SchemaBuilder<T> ColumnName(Func<ColumnInfo, string> name)
         {
             foreach (var col in Schema.Columns.Select((x, i) => new ColumnInfo(i, x)))
                 col.Schema.Name = name(col);
             return this;
         }
 
-        public SheetSchemaBuilder<T> ColumnWidth(Func<ColumnInfo, uint> width)
+        public SchemaBuilder<T> ColumnWidth(Func<ColumnInfo, uint> width)
         {
             foreach (var col in Schema.Columns.Select((x, i) => new ColumnInfo(i, x)))
                 col.Schema.Width = width(col);
             return this;
         }
 
-        public SheetSchemaBuilder<T> ColumnFilter(Func<ColumnInfo, bool> filter)
+        public SchemaBuilder<T> ColumnFilter(Func<ColumnInfo, bool> filter)
         {
             Schema.Columns = Schema.Columns
                 .Select((x, i) => new ColumnInfo(i, x))
@@ -112,7 +49,7 @@ namespace ArrayToExcel
             return this;
         }
 
-        public SheetSchemaBuilder<T> ColumnSort<TKey>(Func<ColumnInfo, TKey> sort, bool desc = false)
+        public SchemaBuilder<T> ColumnSort<TKey>(Func<ColumnInfo, TKey> sort, bool desc = false)
         {
             var colInfos = Schema.Columns.Select((x, i) => new ColumnInfo(i, x)).ToList();
 
@@ -124,14 +61,14 @@ namespace ArrayToExcel
             return this;
         }
 
-        public SheetSchemaBuilder<T> ColumnValue(Func<ColumnInfo, T, object?> value)
+        public SchemaBuilder<T> ColumnValue(Func<ColumnInfo, T, object?> value)
         {
             foreach (var col in Schema.Columns.Select((x, i) => new ColumnInfo(i, x)))
                 col.Schema.Value = x => value(col, (T)x);
             return this;
         }
 
-        public SheetSchemaBuilder<T> AddColumn(string name, Func<T, object?> value, uint width = ColumnSchema.DefaultWidth)
+        public SchemaBuilder<T> AddColumn(string name, Func<T, object?> value, uint width = ColumnSchema.DefaultWidth)
         {
             if (_defaultCols)
             {
@@ -146,6 +83,14 @@ namespace ArrayToExcel
                 Width = width,
             });
 
+            return this;
+        }
+
+        public SchemaBuilder<T> AddSheet<TList>(IEnumerable<TList> list, Action<SchemaBuilder<TList>>? schema = null)
+        {
+            var builder = new SchemaBuilder<TList>(list, Childs);
+            schema?.Invoke(builder);
+            Childs.Add(builder.Schema);
             return this;
         }
 

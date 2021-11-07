@@ -17,10 +17,10 @@ namespace ArrayToExcel
         {
             var builder = new SchemaBuilder<T>(items);
             schema?.Invoke(builder);
-            return _createExcel(builder.SheetSchemas);
+            return _createExcel(new[] { builder.Schema }.Concat(builder.Childs));
         }
 
-        static byte[] _createExcel(List<SheetSchema> sheetSchemas)
+        static byte[] _createExcel(IEnumerable<SheetSchema> sheetSchemas)
         {
             using (var ms = new MemoryStream())
             {

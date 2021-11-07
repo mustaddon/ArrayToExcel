@@ -12,44 +12,38 @@ namespace ArrayToExcel
             return ArrayToExcel.CreateExcel(items, schema);
         }
 
-        public static byte[] ToExcel(this DataSet dataSet, Action<SchemaBuilder<DataRow>>? schema = null)
+        public static byte[] ToExcel(this DataSet dataSet, Action<DataTable, SchemaBuilder<DataRow>>? schema = null)
         {
             var tables = dataSet.Tables.AsEnumerable().ToList();
             return ToExcel(tables.First(), builder =>
             {
                 foreach (var table in tables.Skip(1))
-                    builder.AddSheet(table);
+                    builder.AddSheet(table, s => schema?.Invoke(table, s));
 
-                schema?.Invoke(builder);
+                schema?.Invoke(tables.First(), builder);
             });
         }
 
         public static byte[] ToExcel(this DataTable dataTable, Action<SchemaBuilder<DataRow>>? schema = null)
         {
-            return ArrayToExcel.CreateExcel(dataTable.Rows.AsEnumerable(), builder =>
-            {
-                if (!string.IsNullOrWhiteSpace(dataTable.TableName))
-                    builder.SheetName(dataTable.TableName);
-
-                foreach (DataColumn col in dataTable.Columns)
-                    builder.AddColumn(col.ColumnName, x => x[col]);
-
-                schema?.Invoke(builder);
-            });
+            return ArrayToExcel.CreateExcel(dataTable.Rows.AsEnumerable(), b => dataTable.SchemaBuilder(b, schema));
         }
 
-        public static SchemaBuilder<T> AddSheet<T>(this SchemaBuilder<T> builder, DataTable dataTable, Action<SheetSchemaBuilder<DataRow>>? schema = null)
+        public static SchemaBuilder<T> AddSheet<T>(this SchemaBuilder<T> builder, DataTable dataTable, Action<SchemaBuilder<DataRow>>? schema = null)
         {
-            return builder.AddSheet(dataTable.Rows.AsEnumerable(), builder =>
-            {
-                if (!string.IsNullOrWhiteSpace(dataTable.TableName))
-                    builder.SheetName(dataTable.TableName);
+            return builder.AddSheet(dataTable.Rows.AsEnumerable(), b => dataTable.SchemaBuilder(b, schema));
+        }
 
-                foreach (DataColumn col in dataTable.Columns)
-                    builder.AddColumn(col.ColumnName, x => x[col]);
 
-                schema?.Invoke(builder);
-            });
+        private static void SchemaBuilder(this DataTable dataTable, SchemaBuilder<DataRow> builder, Action<SchemaBuilder<DataRow>>? schema)
+        {
+            if (!string.IsNullOrWhiteSpace(dataTable.TableName))
+                builder.SheetName(dataTable.TableName);
+
+            foreach (DataColumn col in dataTable.Columns)
+                builder.AddColumn(col.ColumnName, x => x[col]);
+
+            schema?.Invoke(builder);
         }
 
         private static IEnumerable<DataRow> AsEnumerable(this DataRowCollection items)
