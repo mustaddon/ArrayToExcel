@@ -83,7 +83,7 @@ for (var i = 1; i <= 3; i++)
 
     for (var x = 1; x <= 10 * i; x++)
         table.Rows.Add($"Text #{x}", x * 1000, DateTime.Now.AddDays(-x));
-}d
+}
 
 var excel = dataSet.ToExcel();
 ```
