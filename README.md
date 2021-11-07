@@ -1,5 +1,5 @@
 # ArrayToExcel [![NuGet version](https://badge.fury.io/nu/ArrayToExcel.svg)](http://badge.fury.io/nu/ArrayToExcel)
-Create Excel from Array
+Create Excel from Array (List, DataTable, DataSet, ...)
 
 ### Example 1: Create with default settings
 ```C#
