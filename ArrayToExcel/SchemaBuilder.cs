@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 
@@ -35,37 +34,37 @@ namespace ArrayToExcel
             return this;
         }
 
-        public SchemaBuilder<T> ColumnName(Func<MemberInfo, string> name)
+        public SchemaBuilder<T> ColumnName(Func<ColumnInfo, string> name)
         {
             _rootSheetBuilder.ColumnName(name);
             return this;
         }
 
-        public SchemaBuilder<T> ColumnWidth(Func<MemberInfo, uint> width)
+        public SchemaBuilder<T> ColumnWidth(Func<ColumnInfo, uint> width)
         {
             _rootSheetBuilder.ColumnWidth(width);
             return this;
         }
 
-        public SchemaBuilder<T> ColumnFilter(Func<MemberInfo, bool> filter)
+        public SchemaBuilder<T> ColumnFilter(Func<ColumnInfo, bool> filter)
         {
             _rootSheetBuilder.ColumnFilter(filter);
             return this;
         }
 
-        public SchemaBuilder<T> ColumnSort<TKey>(Func<MemberInfo, TKey> sort, bool desc = false)
+        public SchemaBuilder<T> ColumnSort<TKey>(Func<ColumnInfo, TKey> sort, bool desc = false)
         {
             _rootSheetBuilder.ColumnSort(sort, desc);
             return this;
         }
 
-        public SchemaBuilder<T> ColumnValue(Func<MemberInfo, T, object?> value)
+        public SchemaBuilder<T> ColumnValue(Func<ColumnInfo, T, object?> value)
         {
             _rootSheetBuilder.ColumnValue(value);
             return this;
         }
 
-        public SchemaBuilder<T> AddColumn(string name, Func<T, object?> value, uint width = 20)
+        public SchemaBuilder<T> AddColumn(string name, Func<T, object?> value, uint width = ColumnSchema.DefaultWidth)
         {
             _rootSheetBuilder.AddColumn(name, value, width);
             return this;
@@ -89,46 +88,46 @@ namespace ArrayToExcel
             return this;
         }
 
-        public SheetSchemaBuilder<T> ColumnName(Func<MemberInfo, string> name)
+        public SheetSchemaBuilder<T> ColumnName(Func<ColumnInfo, string> name)
         {
-            foreach (var col in Schema.Columns)
-                if (col.Member != null)
-                    col.Name = name(col.Member);
+            foreach (var col in Schema.Columns.Select((x, i) => new ColumnInfo(i, x)))
+                col.Schema.Name = name(col);
             return this;
         }
 
-        public SheetSchemaBuilder<T> ColumnWidth(Func<MemberInfo, uint> width)
+        public SheetSchemaBuilder<T> ColumnWidth(Func<ColumnInfo, uint> width)
         {
-            foreach (var col in Schema.Columns)
-                if (col.Member != null)
-                    col.Width = width(col.Member);
+            foreach (var col in Schema.Columns.Select((x, i) => new ColumnInfo(i, x)))
+                col.Schema.Width = width(col);
             return this;
         }
 
-        public SheetSchemaBuilder<T> ColumnFilter(Func<MemberInfo, bool> filter)
+        public SheetSchemaBuilder<T> ColumnFilter(Func<ColumnInfo, bool> filter)
         {
-            Schema.Columns = Schema.Columns.Where(x => x.Member == null || filter(x.Member)).ToList();
+            Schema.Columns = Schema.Columns
+                .Select((x, i) => new ColumnInfo(i, x))
+                .Where(x => filter(x))
+                .Select(x => x.Schema)
+                .ToList();
             return this;
         }
 
-        public SheetSchemaBuilder<T> ColumnSort<TKey>(Func<MemberInfo, TKey> sort, bool desc = false)
+        public SheetSchemaBuilder<T> ColumnSort<TKey>(Func<ColumnInfo, TKey> sort, bool desc = false)
         {
-            if (!_defaultCols)
-                return this;
+            var colInfos = Schema.Columns.Select((x, i) => new ColumnInfo(i, x)).ToList();
 
             Schema.Columns = (desc
-                ? Schema.Columns.OrderByDescending(x => x.Member != null ? sort(x.Member) : default)
-                : Schema.Columns.OrderBy(x => x.Member != null ? sort(x.Member) : default)
-            ).ToList();
+                ? colInfos.OrderByDescending(sort)
+                : colInfos.OrderBy(sort)
+            ).Select(x => x.Schema).ToList();
 
             return this;
         }
 
-        public SheetSchemaBuilder<T> ColumnValue(Func<MemberInfo, T, object?> value)
+        public SheetSchemaBuilder<T> ColumnValue(Func<ColumnInfo, T, object?> value)
         {
-            foreach (var col in Schema.Columns)
-                if (col.Member != null)
-                    col.Value = x => value(col.Member, (T)x);
+            foreach (var col in Schema.Columns.Select((x, i) => new ColumnInfo(i, x)))
+                col.Schema.Value = x => value(col, (T)x);
             return this;
         }
 
