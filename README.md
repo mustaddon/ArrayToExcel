@@ -68,4 +68,29 @@ Result:
 ![](https://raw.githubusercontent.com/mustaddon/ArrayToExcel/master/Examples/example5.png)
 
 
+### Example 6: Create from DataSet
+```C#
+var dataSet = new DataSet();
+
+foreach (var i in Enumerable.Range(1, 3))
+{
+    var table = new DataTable($"Table{i}");
+    dataSet.Tables.Add(table);
+
+    table.Columns.Add($"Column {i}-1", typeof(string));
+    table.Columns.Add($"Column {i}-2", typeof(int));
+    table.Columns.Add($"Column {i}-3", typeof(DateTime));
+
+    foreach (var x in Enumerable.Range(1, 10 * i))
+        table.Rows.Add($"Text #{x}", x * 1000, DateTime.Now.AddDays(-x));
+}
+
+var excel = dataSet.ToExcel();
+```
+Result:
+[example6.xlsx](https://github.com/mustaddon/ArrayToExcel/raw/master/Examples/example6.xlsx)
+
+![](https://raw.githubusercontent.com/mustaddon/ArrayToExcel/master/Examples/example6.png)
+
+
 [Example.ConsoleApp](https://github.com/mustaddon/ArrayToExcel/tree/master/Examples/Example.ConsoleApp/)

@@ -6,9 +6,9 @@
     <Nullable>enable</Nullable>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\ArrayToExcel.snk</AssemblyOriginatorKeyFile>
-	<AssemblyVersion>2.0.1</AssemblyVersion>
-    <FileVersion>2.0.1</FileVersion>
-    <Version>2.0.1</Version>
+	<AssemblyVersion>2.0.2</AssemblyVersion>
+    <FileVersion>2.0.2</FileVersion>
+    <Version>2.0.2</Version>
 	<Company></Company>
     <Authors>Leonid Salavatov</Authors>
     <Copyright>Leonid Salavatov 2021</Copyright>
@@ -16,7 +16,7 @@
     <Product>ArrayToExcel</Product>
     <Title>ArrayToExcel</Title>
     <Description>Create Excel from Array</Description>
-    <PackageTags>array excel xlsx array2excel arraytoexcel convert map mapping dotnet</PackageTags>
+    <PackageTags>excel xlsx array2excel arraytoexcel array list dataset datatable convert map mapping dotnet</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/mustaddon/ArrayToExcel</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mustaddon/ArrayToExcel</RepositoryUrl>
@@ -28,7 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DocumentFormat.OpenXml" Version="2.10.0" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.14.0" />
   </ItemGroup>
 
 </Project>

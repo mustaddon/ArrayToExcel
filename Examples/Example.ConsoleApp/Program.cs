@@ -1,6 +1,8 @@
 ﻿using ArrayToExcel;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -17,7 +19,11 @@ namespace ConsoleApp
             Example4();
             Example5();
             Example6();
-            Example7();
+
+            TestDictionary();
+            TestExpandoObject();
+            TestHashtable();
+            TestDataTable();
             TestTypes();
         }
 
@@ -84,8 +90,31 @@ namespace ConsoleApp
             File.WriteAllBytes($@"..\..\..\..\{nameof(Example5)}.xlsx".ToLower(), excel);
         }
 
-        // list of dictionaries 
+        // DataSet
         static void Example6()
+        {
+            var dataSet = new DataSet();
+
+            foreach (var i in Enumerable.Range(1, 3))
+            {
+                var table = new DataTable($"Table{i}");
+                dataSet.Tables.Add(table);
+
+                table.Columns.Add($"Column {i}-1", typeof(string));
+                table.Columns.Add($"Column {i}-2", typeof(int));
+                table.Columns.Add($"Column {i}-3", typeof(DateTime));
+
+                foreach (var x in Enumerable.Range(1, 10 * i))
+                    table.Rows.Add($"Text #{x}", x * 1000, DateTime.Now.AddDays(-x));
+            }
+
+            var excel = dataSet.ToExcel();
+
+            File.WriteAllBytes($@"..\..\..\..\{nameof(Example6)}.xlsx".ToLower(), excel);
+        }
+
+        // list of dictionaries 
+        static void TestDictionary()
         {
             var items = Enumerable.Range(1, 100).Select(x => new Dictionary<object, object>
             {
@@ -94,13 +123,14 @@ namespace ConsoleApp
                 { "Column #3", DateTime.Now.AddDays(-x) },
             });
 
-            var excel = items.ToExcel();
+            var excel = items.ToExcel(s => s
+                .AddSheet(items.Skip(10))); // extra sheet
 
-            File.WriteAllBytes($@"..\..\..\..\{nameof(Example6)}.xlsx".ToLower(), excel);
+            File.WriteAllBytes($@"..\{nameof(TestDictionary)}.xlsx".ToLower(), excel);
         }
 
         // list of expandos 
-        static void Example7()
+        static void TestExpandoObject()
         {
             var items = Enumerable.Range(1, 100).Select(x =>
             {
@@ -112,11 +142,48 @@ namespace ConsoleApp
                 return item;
             });
 
-            var excel = items.ToExcel();
+            var excel = items.ToExcel(s => s
+                .AddSheet(items.Skip(10))); // extra sheet
 
-            File.WriteAllBytes($@"..\..\..\..\{nameof(Example7)}.xlsx".ToLower(), excel);
+            File.WriteAllBytes($@"..\{nameof(TestExpandoObject)}.xlsx", excel);
         }
 
+        // list of hashtables
+        static void TestHashtable()
+        {
+            var items = Enumerable.Range(1, 100).Select(x =>
+            {
+                var item = new Hashtable();
+                item.Add("Column #1", $"Text #{x}");
+                item.Add("Column #2", x * 1000);
+                item.Add("Column #3", DateTime.Now.AddDays(-x));
+                return item;
+            });
+
+            var excel = items.ToExcel(s => s
+                .AddSheet(items.Skip(10))); // extra sheet
+
+            File.WriteAllBytes($@"..\{nameof(TestHashtable)}.xlsx", excel);
+        }
+
+        // DataTable
+        static void TestDataTable()
+        {
+            var table = new DataTable("Table1");
+
+            table.Columns.Add("Column #1", typeof(string));
+            table.Columns.Add("Column #2", typeof(int));
+            table.Columns.Add("Column #3", typeof(DateTime));
+
+            foreach (var x in Enumerable.Range(1, 100))
+                table.Rows.Add($"Text #{x}", x * 1000, DateTime.Now.AddDays(-x));
+
+            var excel = table.ToExcel();
+
+            File.WriteAllBytes($@"..\{nameof(TestDataTable)}.xlsx", excel);
+        }
+
+        // different types
         static void TestTypes()
         {
             var items = Enumerable.Range(1, 100).Select(x => new
@@ -138,7 +205,6 @@ namespace ConsoleApp
 
             File.WriteAllBytes($@"..\{nameof(TestTypes)}.xlsx", data);
         }
-
 
 
 
