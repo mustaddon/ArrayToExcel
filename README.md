@@ -72,7 +72,7 @@ Result:
 ```C#
 var dataSet = new DataSet();
 
-foreach (var i in Enumerable.Range(1, 3))
+for (var i = 1; i <= 3; i++)
 {
     var table = new DataTable($"Table{i}");
     dataSet.Tables.Add(table);
@@ -81,9 +81,9 @@ foreach (var i in Enumerable.Range(1, 3))
     table.Columns.Add($"Column {i}-2", typeof(int));
     table.Columns.Add($"Column {i}-3", typeof(DateTime));
 
-    foreach (var x in Enumerable.Range(1, 10 * i))
+    for (var x = 1; x <= 10 * i; x++)
         table.Rows.Add($"Text #{x}", x * 1000, DateTime.Now.AddDays(-x));
-}
+}d
 
 var excel = dataSet.ToExcel();
 ```
