@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 
 namespace ArrayToExcel
@@ -9,24 +10,42 @@ namespace ArrayToExcel
     {
         public static byte[] ToExcel<T>(this IEnumerable<T> items, Action<SchemaBuilder<T>>? schema = null)
         {
-            return ArrayToExcel.CreateExcel(items, schema);
+            using var ms = ToExcelStream(items, schema);
+            return ms.ToArray();
+        }
+
+        public static byte[] ToExcel(this DataTable dataTable, Action<SchemaBuilder<DataRow>>? schema = null)
+        {
+            using var ms = ToExcelStream(dataTable, schema);
+            return ms.ToArray();
         }
 
         public static byte[] ToExcel(this DataSet dataSet, Action<DataTable, SchemaBuilder<DataRow>>? schema = null)
         {
+            using var ms = ToExcelStream(dataSet, schema);
+            return ms.ToArray();
+        }
+
+        public static MemoryStream ToExcelStream<T>(this IEnumerable<T> items, Action<SchemaBuilder<T>>? schema = null)
+        {
+            return ArrayToExcel.CreateExcel(items, schema);
+        }
+
+        public static MemoryStream ToExcelStream(this DataTable dataTable, Action<SchemaBuilder<DataRow>>? schema = null)
+        {
+            return ArrayToExcel.CreateExcel(dataTable.Rows.AsEnumerable(), b => dataTable.SchemaBuilder(b, schema));
+        }
+
+        public static MemoryStream ToExcelStream(this DataSet dataSet, Action<DataTable, SchemaBuilder<DataRow>>? schema = null)
+        {
             var tables = dataSet.Tables.AsEnumerable().ToList();
-            return ToExcel(tables.First(), builder =>
+            return ToExcelStream(tables.First(), builder =>
             {
                 foreach (var table in tables.Skip(1))
                     builder.AddSheet(table, s => schema?.Invoke(table, s));
 
                 schema?.Invoke(tables.First(), builder);
             });
-        }
-
-        public static byte[] ToExcel(this DataTable dataTable, Action<SchemaBuilder<DataRow>>? schema = null)
-        {
-            return ArrayToExcel.CreateExcel(dataTable.Rows.AsEnumerable(), b => dataTable.SchemaBuilder(b, schema));
         }
 
         public static SchemaBuilder<T> AddSheet<T>(this SchemaBuilder<T> builder, DataTable dataTable, Action<SchemaBuilder<DataRow>>? schema = null)

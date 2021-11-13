@@ -24,6 +24,7 @@ namespace ConsoleApp
             TestExpandoObject();
             TestHashtable();
             TestDataTable();
+            TestObject();
             TestTypes();
         }
 
@@ -185,7 +186,16 @@ namespace ConsoleApp
             File.WriteAllBytes($@"..\{nameof(TestDataTable)}.xlsx", excel);
         }
 
-        // different types
+        // list of objects
+        static void TestObject()
+        {
+            var excel = SomeItems.AsEnumerable<object>().ToExcel(s => s
+                .AddSheet(SomeItems.AsEnumerable<object>().Skip(3))); // extra sheet
+
+            File.WriteAllBytes($@"..\{nameof(TestObject)}.xlsx", excel);
+        }
+
+        // different types + stream
         static void TestTypes()
         {
             var items = Enumerable.Range(1, 100).Select(x => new
@@ -203,9 +213,9 @@ namespace ConsoleApp
                 String = $"text text text #{x} !!!",
             });
 
-            var data = items.ToExcel();
-
-            File.WriteAllBytes($@"..\{nameof(TestTypes)}.xlsx", data);
+            using var excel = items.ToExcelStream();
+            using var file = File.Create($@"..\{nameof(TestTypes)}.xlsx");
+            excel.CopyTo(file);
         }
 
 

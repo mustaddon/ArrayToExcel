@@ -13,16 +13,16 @@ namespace ArrayToExcel
 {
     public class ArrayToExcel
     {
-        public static byte[] CreateExcel<T>(IEnumerable<T> items, Action<SchemaBuilder<T>>? schema = null)
+        public static MemoryStream CreateExcel<T>(IEnumerable<T> items, Action<SchemaBuilder<T>>? schema = null)
         {
             var builder = new SchemaBuilder<T>(items);
             schema?.Invoke(builder);
             return CreateExcel(new[] { builder.Schema }.Concat(builder.Childs));
         }
 
-        static byte[] CreateExcel(IEnumerable<SheetSchema> sheetSchemas)
+        static MemoryStream CreateExcel(IEnumerable<SheetSchema> sheetSchemas)
         {
-            using var ms = new MemoryStream();
+            var ms = new MemoryStream();
             using (var document = SpreadsheetDocument.Create(ms, SpreadsheetDocumentType.Workbook))
             {
                 var workbookpart = document.AddWorkbookPart();
@@ -36,6 +36,7 @@ namespace ArrayToExcel
 
                 foreach (var sheetSchema in sheetSchemas)
                 {
+
                     var worksheetPart = workbookpart.AddNewPart<WorksheetPart>();
                     worksheetPart.Worksheet = new Worksheet();
 
@@ -46,22 +47,26 @@ namespace ArrayToExcel
                         Name = NormSheetName(sheetSchema.SheetName),
                     });
 
-                    if (sheetSchema.Columns.Count > 0)
+                    var cols = worksheetPart.Worksheet.AppendChild(new Columns());
+                    var sheetData = worksheetPart.Worksheet.AppendChild(new SheetData());
+
+                    if (sheetSchema.Columns.Count == 0)
                     {
-                        var cols = worksheetPart.Worksheet.AppendChild(new Columns());
-                        cols.Append(sheetSchema.Columns.Select((x, i) => new Column() { Min = (uint)(i + 1), Max = (uint)(i + 1), Width = x.Width, CustomWidth = true, BestFit = true }));
-
-                        var rows = GetRows(sheetSchema.Items, sheetSchema.Columns);
-                        var sheetData = worksheetPart.Worksheet.AppendChild(new SheetData());
-                        sheetData.Append(rows);
-
-                        worksheetPart.Worksheet.Append(new AutoFilter() { Reference = $"A1:{GetColReference(sheetSchema.Columns.Count - 1)}{rows.Length}" });
+                        cols.Append(new Column() { Min = 1, Max = 1, BestFit = true });
+                        continue;
                     }
+
+                    cols.Append(sheetSchema.Columns.Select((x, i) => new Column() { Min = (uint)(i + 1), Max = (uint)(i + 1), Width = x.Width, CustomWidth = true, BestFit = true }));
+
+                    sheetData.Append(GetRows(sheetSchema.Items, sheetSchema.Columns));
+
+                    worksheetPart.Worksheet.Append(new AutoFilter() { Reference = $"A1:{GetColReference(sheetSchema.Columns.Count - 1)}{sheetData.ChildElements.Count}" });
                 }
 
                 workbookpart.Workbook.Save();
             }
-            return ms.ToArray();
+            ms.Position = 0;
+            return ms;
         }
 
         static string NormSheetName(string value)
@@ -86,8 +91,10 @@ namespace ArrayToExcel
             stylesPart.Stylesheet.Fills = new Fills();
             stylesPart.Stylesheet.Fills.AppendChild(new Fill { PatternFill = new PatternFill { PatternType = PatternValues.None } }); // required, reserved by Excel
             stylesPart.Stylesheet.Fills.AppendChild(new Fill { PatternFill = new PatternFill { PatternType = PatternValues.Gray125 } }); // required, reserved by Excel
-            stylesPart.Stylesheet.Fills.AppendChild(new Fill { 
-                PatternFill = new PatternFill() { 
+            stylesPart.Stylesheet.Fills.AppendChild(new Fill
+            {
+                PatternFill = new PatternFill()
+                {
                     PatternType = PatternValues.Solid,
                     ForegroundColor = new ForegroundColor { Rgb = HexBinaryValue.FromString("FF4F81BD") },
                     BackgroundColor = new BackgroundColor { Indexed = 64 },
@@ -122,10 +129,8 @@ namespace ArrayToExcel
             stylesPart.Stylesheet.Save();
         }
 
-        static Row[] GetRows(IEnumerable items, List<ColumnSchema> columns)
+        static IEnumerable<Row> GetRows(IEnumerable items, List<ColumnSchema> columns)
         {
-            var rows = new List<Row>();
-
             var headerCells = columns.Select((x, i) => new Cell
             {
                 CellReference = GetColReference(i),
@@ -136,17 +141,17 @@ namespace ArrayToExcel
 
             var headerRow = new Row() { RowIndex = 1 };
             headerRow.Append(headerCells);
-            rows.Add(headerRow);
 
-            var i = 2;
+            yield return headerRow;
+
+            var i = 2u;
             foreach (var item in items)
             {
-                var row = new Row() { RowIndex = (uint)i++ };
+                var row = new Row() { RowIndex = i++ };
                 var cells = columns.Select((x, i) => GetCell(headerCells[i].CellReference, x.Value?.Invoke(item))).ToArray();
                 row.Append(cells);
-                rows.Add(row);
+                yield return row;
             }
-            return rows.ToArray();
         }
 
         static Cell GetCell(string? reference, object? value)
@@ -163,29 +168,29 @@ namespace ArrayToExcel
 
         static CellValue GetCellValue(object? value)
         {
-            if (value == null) return new ();
+            if (value == null) return new();
 
             var type = value.GetType();
 
             if (type == typeof(bool))
-                return new ((bool)value ? "1" : "0");
+                return new((bool)value ? "1" : "0");
 
             if (type == typeof(DateTime))
-                return new (((DateTime)value).ToString("s", _cultureInfo));
+                return new(((DateTime)value).ToString("s", _cultureInfo));
 
             if (type == typeof(DateTimeOffset))
-                return new (((DateTimeOffset)value).ToString("s", _cultureInfo));
+                return new(((DateTimeOffset)value).ToString("s", _cultureInfo));
 
             if (type == typeof(double))
-                return new (((double)value).ToString(_cultureInfo));
+                return new(((double)value).ToString(_cultureInfo));
 
             if (type == typeof(decimal))
-                return new (((decimal)value).ToString(_cultureInfo));
+                return new(((decimal)value).ToString(_cultureInfo));
 
             if (type == typeof(float))
-                return new (((float)value).ToString(_cultureInfo));
+                return new(((float)value).ToString(_cultureInfo));
 
-            return new (RemoveInvalidXmlChars(value.ToString()));
+            return new(RemoveInvalidXmlChars(value.ToString()));
         }
 
         static string RemoveInvalidXmlChars(string text)
@@ -225,7 +230,7 @@ namespace ArrayToExcel
             return new string(result.ToArray());
         }
 
-        static readonly HashSet<Type> _numericTypes = new ()
+        static readonly HashSet<Type> _numericTypes = new()
         {
             typeof(short),
             typeof(ushort),

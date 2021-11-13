@@ -98,6 +98,16 @@ namespace ArrayToExcel
         {
             var type = typeof(T);
 
+            if(type == typeof(object))
+            {
+                var enumerator = items.GetEnumerator();
+
+                if (!enumerator.MoveNext())
+                    return new List<ColumnSchema>();
+
+                type = enumerator.Current.GetType();
+            }
+
             if (typeof(IDictionary<string, object?>).IsAssignableFrom(type))
             {
                 var enumerator = items.GetEnumerator();
