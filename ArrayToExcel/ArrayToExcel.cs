@@ -32,20 +32,25 @@ namespace ArrayToExcel
 
                 AddStyles(workbookpart);
 
-                var sheetId = 1u;
+                var sheetNames = new HashSet<string>();
+                var sheetId = 0u;
 
                 foreach (var sheetSchema in sheetSchemas)
                 {
+                    sheetId++;
 
                     var worksheetPart = workbookpart.AddNewPart<WorksheetPart>();
                     worksheetPart.Worksheet = new Worksheet();
 
-                    sheets.Append(new Sheet()
+                    var sheet = new Sheet()
                     {
                         Id = workbookpart.GetIdOfPart(worksheetPart),
-                        SheetId = sheetId++,
-                        Name = NormSheetName(sheetSchema.SheetName),
-                    });
+                        SheetId = sheetId,
+                        Name = NormSheetName(sheetSchema.SheetName, sheetId, sheetNames),
+                    };
+
+                    sheetNames.Add(sheet.Name.Value ?? string.Empty);
+                    sheets.Append(sheet);
 
                     var cols = worksheetPart.Worksheet.AppendChild(new Columns());
                     var sheetData = worksheetPart.Worksheet.AppendChild(new SheetData());
@@ -69,9 +74,17 @@ namespace ArrayToExcel
             return ms;
         }
 
-        static string NormSheetName(string value)
+        static string NormSheetName(string? value, uint sheetId, HashSet<string> existNames)
         {
-            return value.Length > 31 ? value.Substring(0, 28) + "..." : value;
+            value = _invalidSheetNameChars.Replace(value ?? string.Empty, string.Empty).Trim();
+
+            if (string.IsNullOrWhiteSpace(value) || existNames.Contains(value))
+                return $"Sheet{sheetId}";
+
+            if (value.Length > 31)
+                return $"{value.Substring(0, 28)}...";
+
+            return value;
         }
 
         static void AddStyles(WorkbookPart workbookPart)
@@ -190,14 +203,7 @@ namespace ArrayToExcel
             if (type == typeof(float))
                 return new(((float)value).ToString(_cultureInfo));
 
-            return new(RemoveInvalidXmlChars(value.ToString()));
-        }
-
-        static string RemoveInvalidXmlChars(string text)
-        {
-            return string.IsNullOrEmpty(text) ? text
-                : new Regex(@"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]", RegexOptions.Compiled)
-                    .Replace(text, string.Empty);
+            return new(_invalidXmlChars.Replace(value.ToString(), string.Empty));
         }
 
         static CellValues GetCellType(object? value)
@@ -246,5 +252,9 @@ namespace ArrayToExcel
         static readonly CultureInfo _cultureInfo = CultureInfo.GetCultureInfo("en-US");
 
         static readonly string _digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        static readonly Regex _invalidXmlChars = new(@"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]", RegexOptions.Compiled);
+
+        static readonly Regex _invalidSheetNameChars = new(@"[:?*\\/\[\]\r\n]|[\uDC00-\uDFFF]|[\uD800-\uDBFF]|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]", RegexOptions.Compiled);
     }
 }
