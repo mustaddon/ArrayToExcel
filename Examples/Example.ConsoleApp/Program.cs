@@ -66,7 +66,7 @@ namespace ConsoleApp
         static void Example4()
         {
             var excel = SomeItems.ToExcel(schema => schema
-                .AddColumn("MyColumnName#1", x => x.Prop1)
+                .AddColumn("MyColumnName#1", x => new Hyperlink($"https://www.google.com/search?q={x.Prop1}", x.Prop1))
                 .AddColumn("MyColumnName#2", x => $"test:{x.Prop2}")
                 .AddColumn("MyColumnName#3", x => x.Prop3));
 
@@ -211,6 +211,8 @@ namespace ConsoleApp
                 DateTime = DateTime.Now.AddDays(-x),
                 DateTimeOffset = DateTimeOffset.Now.AddDays(-x),
                 String = $"text text text #{x} !!!",
+                Uri = new Uri($"https://www.google.com/search?q={x}"),
+                Hyperlink = new Hyperlink($"https://www.google.com/search?q={x}", $"link_{x}"),
             });
 
             using var excel = items.ToExcelStream();

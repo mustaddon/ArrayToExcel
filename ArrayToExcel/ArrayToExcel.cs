@@ -95,9 +95,8 @@ namespace ArrayToExcel
             // fonts
             stylesPart.Stylesheet.Fonts = new Fonts();
             stylesPart.Stylesheet.Fonts.AppendChild(new Font());
-            var font1 = stylesPart.Stylesheet.Fonts.AppendChild(new Font());
-            font1.Append(new Bold());
-            font1.Append(new Color() { Rgb = HexBinaryValue.FromString("FFFFFFFF") });
+            stylesPart.Stylesheet.Fonts.AppendChild(new Font(new Bold(), new Color() { Rgb = HexBinaryValue.FromString("FFFFFFFF") }));
+            stylesPart.Stylesheet.Fonts.AppendChild(new Font(new Underline(), new Color() { Theme = 10U }));
             stylesPart.Stylesheet.Fonts.Count = (uint)stylesPart.Stylesheet.Fonts.ChildElements.Count;
 
             // fills
@@ -137,6 +136,8 @@ namespace ArrayToExcel
             stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 1, BorderId = 0, FillId = 2, ApplyFill = true }).AppendChild(new Alignment { Horizontal = HorizontalAlignmentValues.Left, Vertical = VerticalAlignmentValues.Center });
             // datetime style
             stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { ApplyNumberFormat = true, NumberFormatId = 14, FormatId = 0, FontId = 0, BorderId = 0, FillId = 0, ApplyFill = true });
+            // hyperlink style
+            stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 2 });
             stylesPart.Stylesheet.CellFormats.Count = (uint)stylesPart.Stylesheet.CellFormats.ChildElements.Count;
 
             stylesPart.Stylesheet.Save();
@@ -170,13 +171,27 @@ namespace ArrayToExcel
         static Cell GetCell(string? reference, object? value)
         {
             var dataType = GetCellType(value);
-            return new Cell
+
+            var cell = new Cell
             {
                 CellReference = reference,
                 CellValue = GetCellValue(value),
                 DataType = dataType,
                 StyleIndex = dataType == CellValues.Date ? 2 : 0u,
             };
+
+            if (value is Hyperlink hyperlink)
+            {
+                cell.CellFormula = new CellFormula(hyperlink.ToString());
+                cell.StyleIndex = 3;
+            } 
+            else if (value is Uri uri)
+            {
+                cell.CellFormula = new CellFormula(new Hyperlink(uri).ToString());
+                cell.StyleIndex = 3;
+            }
+
+            return cell;
         }
 
         static CellValue GetCellValue(object? value)

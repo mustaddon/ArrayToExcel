@@ -6,12 +6,12 @@
     <Nullable>enable</Nullable>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\ArrayToExcel.snk</AssemblyOriginatorKeyFile>
-	<AssemblyVersion>2.0.5</AssemblyVersion>
-    <FileVersion>2.0.5</FileVersion>
-    <Version>2.0.5</Version>
+	<AssemblyVersion>2.0.6</AssemblyVersion>
+    <FileVersion>2.0.6</FileVersion>
+    <Version>2.0.6</Version>
 	<Company></Company>
     <Authors>Leonid Salavatov</Authors>
-    <Copyright>Leonid Salavatov 2021</Copyright>
+    <Copyright>Leonid Salavatov 2022</Copyright>
     <PackageId>ArrayToExcel</PackageId>
     <Product>ArrayToExcel</Product>
     <Title>ArrayToExcel</Title>
@@ -28,7 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DocumentFormat.OpenXml" Version="2.14.0" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.15.0" />
   </ItemGroup>
 
 </Project>
