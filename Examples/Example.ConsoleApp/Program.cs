@@ -200,6 +200,8 @@ namespace ConsoleApp
         {
             var items = Enumerable.Range(1, 100).Select(x => new
             {
+                Multiline = $"1) text text text; \n2) text text text",
+                String = $"text text text #{x} !!!",
                 Bool = x % 2 == 0,
                 NullableBool = x % 2 == 0 ? true : (bool?)null,
                 Int = -x * 100,
@@ -210,7 +212,6 @@ namespace ConsoleApp
                 Decimal = 1.1m + x,
                 DateTime = DateTime.Now.AddDays(-x),
                 DateTimeOffset = DateTimeOffset.Now.AddDays(-x),
-                String = $"text text text #{x} !!!",
                 Uri = new Uri($"https://www.google.com/search?q={x}"),
                 Hyperlink = new Hyperlink($"https://www.google.com/search?q={x}", $"link_{x}"),
             });

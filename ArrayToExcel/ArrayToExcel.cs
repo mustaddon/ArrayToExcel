@@ -133,11 +133,14 @@ namespace ArrayToExcel
             stylesPart.Stylesheet.CellFormats = new CellFormats();
             stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat());
             // header style
-            stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 1, BorderId = 0, FillId = 2, ApplyFill = true }).AppendChild(new Alignment { Horizontal = HorizontalAlignmentValues.Left, Vertical = VerticalAlignmentValues.Center });
+            stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 1, BorderId = 0, FillId = 2, ApplyFill = true }).AppendChild(new Alignment { Horizontal = HorizontalAlignmentValues.Left, Vertical = VerticalAlignmentValues.Center, WrapText = true });
             // datetime style
-            stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { ApplyNumberFormat = true, NumberFormatId = 14, FormatId = 0, FontId = 0, BorderId = 0, FillId = 0, ApplyFill = true });
+            stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { ApplyNumberFormat = true, NumberFormatId = 14, FormatId = 0, FontId = 0, BorderId = 0, FillId = 0, ApplyFill = true }).AppendChild(new Alignment { Vertical = VerticalAlignmentValues.Top });
             // hyperlink style
-            stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 2 });
+            stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 2 }).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top });
+            // multiline style
+            stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat()).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top, WrapText = true });
+            
             stylesPart.Stylesheet.CellFormats.Count = (uint)stylesPart.Stylesheet.CellFormats.ChildElements.Count;
 
             stylesPart.Stylesheet.Save();
@@ -177,7 +180,7 @@ namespace ArrayToExcel
                 CellReference = reference,
                 CellValue = GetCellValue(value),
                 DataType = dataType,
-                StyleIndex = dataType == CellValues.Date ? 2 : 0u,
+                StyleIndex = dataType == CellValues.Date ? 2 : 4u,
             };
 
             if (value is Hyperlink hyperlink)
