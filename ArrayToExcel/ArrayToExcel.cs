@@ -140,7 +140,7 @@ namespace ArrayToExcel
             stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 2 }).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top });
             // multiline style
             stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat()).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top, WrapText = true });
-            
+
             stylesPart.Stylesheet.CellFormats.Count = (uint)stylesPart.Stylesheet.CellFormats.ChildElements.Count;
 
             stylesPart.Stylesheet.Save();
@@ -173,25 +173,29 @@ namespace ArrayToExcel
 
         static Cell GetCell(string? reference, object? value)
         {
-            var dataType = GetCellType(value);
+            var cell = new Cell { CellReference = reference };
 
-            var cell = new Cell
+            if (value is string text)
             {
-                CellReference = reference,
-                CellValue = GetCellValue(value),
-                DataType = dataType,
-                StyleIndex = dataType == CellValues.Date ? 2 : 4u,
-            };
-
-            if (value is Hyperlink hyperlink)
+                cell.InlineString = GetInlineString(text);
+                cell.DataType = CellValues.InlineString;
+                cell.StyleIndex = 4;
+            }
+            else if (value is Hyperlink hyperlink)
             {
                 cell.CellFormula = new CellFormula(hyperlink.ToString());
                 cell.StyleIndex = 3;
-            } 
+            }
             else if (value is Uri uri)
             {
                 cell.CellFormula = new CellFormula(new Hyperlink(uri).ToString());
                 cell.StyleIndex = 3;
+            }
+            else
+            {
+                cell.CellValue = GetCellValue(value);
+                cell.DataType = GetCellType(value);
+                cell.StyleIndex = cell.DataType == CellValues.Date ? 2 : 4u;
             }
 
             return cell;
@@ -222,6 +226,14 @@ namespace ArrayToExcel
                 return new(((float)value).ToString(_cultureInfo));
 
             return new(_invalidXmlChars.Replace(value.ToString(), string.Empty));
+        }
+
+        static InlineString GetInlineString(string value)
+        {
+            return new InlineString(new Text(_invalidXmlChars.Replace(value, string.Empty))
+            {
+                Space = SpaceProcessingModeValues.Preserve
+            });
         }
 
         static CellValues GetCellType(object? value)
