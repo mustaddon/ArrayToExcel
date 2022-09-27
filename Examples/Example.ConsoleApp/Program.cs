@@ -214,6 +214,7 @@ namespace ConsoleApp
                 DateTimeOffset = DateTimeOffset.Now.AddDays(-x),
                 Uri = new Uri($"https://www.google.com/search?q={x}"),
                 Hyperlink = new Hyperlink($"https://www.google.com/search?q={x}", $"link_{x}"),
+                Formula = new Formula(r => $"G{r}+H{r}"),
             });
 
             using var excel = items.ToExcelStream();

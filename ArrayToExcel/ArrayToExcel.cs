@@ -165,20 +165,25 @@ namespace ArrayToExcel
             foreach (var item in items)
             {
                 var row = new Row() { RowIndex = i++ };
-                var cells = columns.Select((x, i) => GetCell(headerCells[i].CellReference, x.Value?.Invoke(item))).ToArray();
+                var cells = columns.Select((x, i) => GetCell(row.RowIndex, headerCells[i].CellReference, x.Value?.Invoke(item))).ToArray();
                 row.Append(cells);
                 yield return row;
             }
         }
 
-        static Cell GetCell(string? reference, object? value)
+        static Cell GetCell(uint rowIndex, string? cellReference, object? value)
         {
-            var cell = new Cell { CellReference = reference };
+            var cell = new Cell { CellReference = cellReference };
 
             if (value is string text)
             {
                 cell.InlineString = GetInlineString(text);
                 cell.DataType = CellValues.InlineString;
+                cell.StyleIndex = 4;
+            }
+            else if (value is Formula formula)
+            {
+                cell.CellFormula = new CellFormula(formula.RowText(rowIndex));
                 cell.StyleIndex = 4;
             }
             else if (value is Hyperlink hyperlink)
