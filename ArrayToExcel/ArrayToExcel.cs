@@ -230,7 +230,7 @@ namespace ArrayToExcel
             if (type == typeof(float))
                 return new(((float)value).ToString(_cultureInfo));
 
-            return new(_invalidXmlChars.Replace(value.ToString(), string.Empty));
+            return new(_invalidXmlChars.Replace(value.ToString()!, string.Empty));
         }
 
         static InlineString GetInlineString(string value)
