@@ -81,8 +81,8 @@ namespace ArrayToExcel
             if (string.IsNullOrWhiteSpace(value) || existNames.Contains(value))
                 return $"Sheet{sheetId}";
 
-            if (value.Length > 31)
-                return $"{value.Substring(0, 28)}...";
+            if (value.Length > _maxSheetName)
+                return value.Substring(0, _maxSheetName);
 
             return value;
         }
@@ -230,15 +230,20 @@ namespace ArrayToExcel
             if (type == typeof(float))
                 return new(((float)value).ToString(_cultureInfo));
 
-            return new(_invalidXmlChars.Replace(value.ToString()!, string.Empty));
+            return new(NormCellText(value.ToString()!));
         }
 
         static InlineString GetInlineString(string value)
         {
-            return new InlineString(new Text(_invalidXmlChars.Replace(value, string.Empty))
+            return new InlineString(new Text(NormCellText(value))
             {
                 Space = SpaceProcessingModeValues.Preserve
             });
+        }
+
+        static string NormCellText(string value)
+        {
+            return _invalidXmlChars.Replace(value.Length > _maxCellText ? value.Substring(0, _maxCellText) : value, string.Empty);
         }
 
         static CellValues GetCellType(object? value)
@@ -291,5 +296,9 @@ namespace ArrayToExcel
         static readonly Regex _invalidXmlChars = new(@"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]", RegexOptions.Compiled);
 
         static readonly Regex _invalidSheetNameChars = new(@"[:?*\\/\[\]\r\n]|[\uDC00-\uDFFF]|[\uD800-\uDBFF]|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]", RegexOptions.Compiled);
+
+        const int _maxSheetName = 31;
+
+        const int _maxCellText = 32767;
     }
 }
