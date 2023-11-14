@@ -122,6 +122,7 @@ namespace ArrayToExcel
             // NumberingFormats
             //uint iExcelIndex = 164;
             stylesPart.Stylesheet.NumberingFormats = new NumberingFormats();
+            stylesPart.Stylesheet.NumberingFormats.AddChild(new NumberingFormat { NumberFormatId = 3453, FormatCode = "0.00%" });
             stylesPart.Stylesheet.NumberingFormats.Count = (uint)stylesPart.Stylesheet.NumberingFormats.ChildElements.Count;
 
             // cell style formats
@@ -140,6 +141,8 @@ namespace ArrayToExcel
             stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 2 }).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top });
             // multiline style
             stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat()).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top, WrapText = true });
+            // percentage
+            stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { NumberFormatId = 3453 }).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top });
 
             stylesPart.Stylesheet.CellFormats.Count = (uint)stylesPart.Stylesheet.CellFormats.ChildElements.Count;
 
@@ -195,6 +198,12 @@ namespace ArrayToExcel
             {
                 cell.CellFormula = new CellFormula(new Hyperlink(uri).ToString());
                 cell.StyleIndex = 3;
+            }
+            else if (value is Percent percent)
+            {
+                cell.CellValue = GetCellValue(percent.Value);
+                cell.DataType = GetCellType(percent.Value);
+                cell.StyleIndex = 5;
             }
             else
             {
