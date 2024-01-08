@@ -6,9 +6,9 @@
     <Nullable>enable</Nullable>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\ArrayToExcel.snk</AssemblyOriginatorKeyFile>
-	<AssemblyVersion>2.2.4</AssemblyVersion>
-    <FileVersion>2.2.4</FileVersion>
-    <Version>2.2.4</Version>
+	<AssemblyVersion>2.3.0</AssemblyVersion>
+    <FileVersion>2.3.0</FileVersion>
+    <Version>2.3.0</Version>
 	<Company></Company>
     <Authors>Leonid Salavatov</Authors>
     <Copyright>Leonid Salavatov 2024</Copyright>

@@ -220,12 +220,8 @@ namespace ConsoleApp
                 Percent = new Percent(1d/x),
             });
 
-            using var excel = items.ToExcelStream();
             using var file = File.Create($@"..\{nameof(TestTypes)}.xlsx");
-            excel.CopyTo(file);
+            items.ToExcel(file);
         }
-
-
-
     }
 }

@@ -14,63 +14,67 @@ namespace ArrayToExcel
     {
         public static MemoryStream CreateExcel<T>(IEnumerable<T> items, Action<SchemaBuilder<T>>? schema = null)
         {
-            var builder = new SchemaBuilder<T>(items);
-            schema?.Invoke(builder);
-            return CreateExcel(new[] { builder.Schema }.Concat(builder.Childs));
-        }
-
-        static MemoryStream CreateExcel(IEnumerable<SheetSchema> sheetSchemas)
-        {
             var ms = new MemoryStream();
-            using (var document = SpreadsheetDocument.Create(ms, SpreadsheetDocumentType.Workbook))
-            {
-                var workbookpart = document.AddWorkbookPart();
-                workbookpart.Workbook = new Workbook();
-
-                var sheets = workbookpart.Workbook.AppendChild(new Sheets());
-
-                AddStyles(workbookpart);
-
-                var sheetNames = new HashSet<string>();
-                var sheetId = 0u;
-
-                foreach (var sheetSchema in sheetSchemas)
-                {
-                    sheetId++;
-
-                    var worksheetPart = workbookpart.AddNewPart<WorksheetPart>();
-                    worksheetPart.Worksheet = new Worksheet();
-
-                    var sheet = new Sheet()
-                    {
-                        Id = workbookpart.GetIdOfPart(worksheetPart),
-                        SheetId = sheetId,
-                        Name = NormSheetName(sheetSchema.SheetName, sheetId, sheetNames),
-                    };
-
-                    sheetNames.Add(sheet.Name.Value ?? string.Empty);
-                    sheets.Append(sheet);
-
-                    var cols = worksheetPart.Worksheet.AppendChild(new Columns());
-                    var sheetData = worksheetPart.Worksheet.AppendChild(new SheetData());
-
-                    if (sheetSchema.Columns.Count == 0)
-                    {
-                        cols.Append(new Column() { Min = 1, Max = 1, BestFit = true });
-                        continue;
-                    }
-
-                    cols.Append(sheetSchema.Columns.Select((x, i) => new Column() { Min = (uint)(i + 1), Max = (uint)(i + 1), Width = x.Width, CustomWidth = true, BestFit = true }));
-
-                    sheetData.Append(GetRows(sheetSchema.Items, sheetSchema.Columns));
-
-                    worksheetPart.Worksheet.Append(new AutoFilter() { Reference = $"A1:{GetColReference(sheetSchema.Columns.Count - 1)}{sheetData.ChildElements.Count}" });
-                }
-
-                workbookpart.Workbook.Save();
-            }
+            CreateExcel(ms, items, schema);
             ms.Position = 0;
             return ms;
+        }
+
+        public static void CreateExcel<T>(Stream stream, IEnumerable<T> items, Action<SchemaBuilder<T>>? schema = null)
+        {
+            var builder = new SchemaBuilder<T>(items);
+            schema?.Invoke(builder);
+            CreateExcel(stream, new[] { builder.Schema }.Concat(builder.Childs));
+        }
+
+        static void CreateExcel(Stream stream, IEnumerable<SheetSchema> sheetSchemas)
+        {
+            using var document = SpreadsheetDocument.Create(stream, SpreadsheetDocumentType.Workbook);
+
+            var workbookpart = document.AddWorkbookPart();
+            workbookpart.Workbook = new Workbook();
+
+            var sheets = workbookpart.Workbook.AppendChild(new Sheets());
+
+            AddStyles(workbookpart);
+
+            var sheetNames = new HashSet<string>();
+            var sheetId = 0u;
+
+            foreach (var sheetSchema in sheetSchemas)
+            {
+                sheetId++;
+
+                var worksheetPart = workbookpart.AddNewPart<WorksheetPart>();
+                worksheetPart.Worksheet = new Worksheet();
+
+                var sheet = new Sheet()
+                {
+                    Id = workbookpart.GetIdOfPart(worksheetPart),
+                    SheetId = sheetId,
+                    Name = NormSheetName(sheetSchema.SheetName, sheetId, sheetNames),
+                };
+
+                sheetNames.Add(sheet.Name.Value ?? string.Empty);
+                sheets.Append(sheet);
+
+                var cols = worksheetPart.Worksheet.AppendChild(new Columns());
+                var sheetData = worksheetPart.Worksheet.AppendChild(new SheetData());
+
+                if (sheetSchema.Columns.Count == 0)
+                {
+                    cols.Append(new Column() { Min = 1, Max = 1, BestFit = true });
+                    continue;
+                }
+
+                cols.Append(sheetSchema.Columns.Select((x, i) => new Column() { Min = (uint)(i + 1), Max = (uint)(i + 1), Width = x.Width, CustomWidth = true, BestFit = true }));
+
+                sheetData.Append(GetRows(sheetSchema.Items, sheetSchema.Columns));
+
+                worksheetPart.Worksheet.Append(new AutoFilter() { Reference = $"A1:{GetColReference(sheetSchema.Columns.Count - 1)}{sheetData.ChildElements.Count}" });
+            }
+
+            workbookpart.Workbook.Save();
         }
 
         static string NormSheetName(string? value, uint sheetId, HashSet<string> existNames)
