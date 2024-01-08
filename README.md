@@ -93,4 +93,4 @@ Result:
 ![](https://raw.githubusercontent.com/mustaddon/ArrayToExcel/master/Examples/example6.png)
 
 
-[Example.ConsoleApp](https://github.com/mustaddon/ArrayToExcel/tree/master/Examples/Example.ConsoleApp/)
+[Example.ConsoleApp](https://github.com/mustaddon/ArrayToExcel/tree/master/Examples/Example.ConsoleApp/Program.cs)

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace ArrayToExcel
 {
@@ -76,7 +75,7 @@ namespace ArrayToExcel
 
         static string NormSheetName(string? value, uint sheetId, HashSet<string> existNames)
         {
-            value = _invalidSheetNameChars.Replace(value ?? string.Empty, string.Empty).Trim();
+            value = RegularExpressions.InvalidSheetNameChars().Replace(value ?? string.Empty, string.Empty).Trim();
 
             if (string.IsNullOrWhiteSpace(value) || existNames.Contains(value))
                 return $"Sheet{sheetId}";
@@ -252,7 +251,7 @@ namespace ArrayToExcel
 
         static string NormCellText(string value)
         {
-            return _invalidXmlChars.Replace(value.Length > _maxCellText ? value.Substring(0, _maxCellText) : value, string.Empty);
+            return RegularExpressions.InvalidXmlChars().Replace(value.Length > _maxCellText ? value.Substring(0, _maxCellText) : value, string.Empty);
         }
 
         static CellValues GetCellType(object? value)
@@ -285,8 +284,7 @@ namespace ArrayToExcel
             return new string(result.ToArray());
         }
 
-        static readonly HashSet<Type> _numericTypes = new()
-        {
+        static readonly HashSet<Type> _numericTypes = [
             typeof(short),
             typeof(ushort),
             typeof(int),
@@ -295,16 +293,11 @@ namespace ArrayToExcel
             typeof(ulong),
             typeof(double),
             typeof(decimal),
-            typeof(float),
-        };
+            typeof(float)];
 
         static readonly CultureInfo _cultureInfo = CultureInfo.GetCultureInfo("en-US");
 
         static readonly string _digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-        static readonly Regex _invalidXmlChars = new(@"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]", RegexOptions.Compiled);
-
-        static readonly Regex _invalidSheetNameChars = new(@"[:?*\\/\[\]\r\n]|[\uDC00-\uDFFF]|[\uD800-\uDBFF]|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]", RegexOptions.Compiled);
 
         const int _maxSheetName = 31;
 

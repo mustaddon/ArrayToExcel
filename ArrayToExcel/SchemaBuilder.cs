@@ -10,7 +10,7 @@ namespace ArrayToExcel
     {
         internal SchemaBuilder(IEnumerable items, List<SheetSchema>? parentChilds = null)
         {
-            Childs = parentChilds ?? new();
+            Childs = parentChilds ?? [];
             Schema = new($"Sheet{(parentChilds?.Count + 2) ?? 1}", DefaultColumns(items), items);
         }
 
@@ -94,7 +94,7 @@ namespace ArrayToExcel
             return this;
         }
 
-        private List<ColumnSchema> DefaultColumns(IEnumerable items)
+        private static List<ColumnSchema> DefaultColumns(IEnumerable items)
         {
             var type = typeof(T);
 
@@ -103,7 +103,7 @@ namespace ArrayToExcel
                 var enumerator = items.GetEnumerator();
 
                 if (!enumerator.MoveNext())
-                    return new List<ColumnSchema>();
+                    return [];
 
                 type = enumerator.Current.GetType();
             }
@@ -118,7 +118,7 @@ namespace ArrayToExcel
                         Name = kvp.Key,
                         Value = new(x => (x as IDictionary<string, object?>)?[kvp.Key]),
                     })
-                    .ToList() ?? new List<ColumnSchema>();
+                    .ToList() ?? [];
             }
 
             if (typeof(IDictionary).IsAssignableFrom(type))

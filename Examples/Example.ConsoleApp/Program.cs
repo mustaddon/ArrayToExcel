@@ -11,7 +11,7 @@ namespace ConsoleApp
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             Example1();
             Example2();
@@ -28,7 +28,7 @@ namespace ConsoleApp
             TestTypes();
         }
 
-        static IEnumerable<SomeItem> SomeItems = Enumerable.Range(1, 10).Select(x => new SomeItem
+        static readonly IEnumerable<SomeItem> SomeItems = Enumerable.Range(1, 10).Select(x => new SomeItem
         {
             Prop1 = $"Text #{x}",
             Prop2 = x * 1000,
@@ -154,10 +154,12 @@ namespace ConsoleApp
         {
             var items = Enumerable.Range(1, 100).Select(x =>
             {
-                var item = new Hashtable();
-                item.Add("Column #1", $"Text #{x}");
-                item.Add("Column #2", x * 1000);
-                item.Add("Column #3", DateTime.Now.AddDays(-x));
+                var item = new Hashtable
+                {
+                    { "Column #1", $"Text #{x}" },
+                    { "Column #2", x * 1000 },
+                    { "Column #3", DateTime.Now.AddDays(-x) }
+                };
                 return item;
             });
 

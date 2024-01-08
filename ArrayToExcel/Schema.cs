@@ -5,18 +5,11 @@ using System.Reflection;
 
 namespace ArrayToExcel
 {
-    internal class SheetSchema
+    internal class SheetSchema(string sheetName, List<ColumnSchema> columns, IEnumerable items)
     {
-        public SheetSchema(string sheetName, List<ColumnSchema> columns, IEnumerable items)
-        {
-            SheetName = sheetName;
-            Columns = columns;
-            Items = items;
-        }
-
-        public string SheetName { get; set; }
-        public List<ColumnSchema> Columns { get; set; }
-        public IEnumerable Items { get; set; }
+        public string SheetName { get; set; } = sheetName;
+        public List<ColumnSchema> Columns { get; set; } = columns;
+        public IEnumerable Items { get; set; } = items;
     }
 
     internal class ColumnSchema
