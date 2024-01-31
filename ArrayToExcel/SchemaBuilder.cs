@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ArrayToExcel._internal;
 
 namespace ArrayToExcel
 {
@@ -22,6 +23,12 @@ namespace ArrayToExcel
         public SchemaBuilder<T> SheetName(string name)
         {
             Schema.SheetName = name;
+            return this;
+        }
+
+        public SchemaBuilder<T> WrapText(bool value)
+        {
+            Schema.WrapText = value;
             return this;
         }
 
@@ -96,9 +103,9 @@ namespace ArrayToExcel
 
         private static List<ColumnSchema> DefaultColumns(IEnumerable items)
         {
-            var type = typeof(T);
+            var type = items.GetType().GetElementTypeExt() ?? typeof(T);
 
-            if(type == typeof(object))
+            if (type == typeof(object))
             {
                 var enumerator = items.GetEnumerator();
 
@@ -148,7 +155,7 @@ namespace ArrayToExcel
             }
 
             return type.GetMembers(BindingFlags.Instance | BindingFlags.Public)
-                .Where(x => x is PropertyInfo || x is FieldInfo)
+                .Where(x => (x is PropertyInfo prop && prop.CanRead) || x is FieldInfo)
                 .Select(member => new ColumnSchema
                 {
                     Member = member,

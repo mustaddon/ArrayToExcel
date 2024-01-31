@@ -1,14 +1,6 @@
-﻿using System;
+﻿namespace ArrayToExcel;
 
-namespace ArrayToExcel
+public class Percent(object? value)
 {
-    public class Percent
-    {
-        public Percent(object? value)
-        {
-            Value = value;
-        }
-
-        public object? Value { get; }
-    }
+    public object? Value { get; } = value;
 }

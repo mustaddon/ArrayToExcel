@@ -3,31 +3,30 @@ using System.Data;
 using System.IO;
 using System.Linq;
 
-namespace ArrayToExcel
+namespace ArrayToExcel;
+
+public static partial class Extensions
 {
-    public static partial class Extensions
+    public static void ToExcel(this DataSet dataSet, Stream stream, Action<DataTable, SchemaBuilder<DataRow>>? schema = null)
     {
-        public static void ToExcel(this DataSet dataSet, Stream stream, Action<DataTable, SchemaBuilder<DataRow>>? schema = null)
+        var tables = dataSet.Tables.AsEnumerable().ToList();
+        ToExcel(tables.First(), stream, builder =>
         {
-            var tables = dataSet.Tables.AsEnumerable().ToList();
-            ToExcel(tables.First(), stream, builder =>
-            {
-                foreach (var table in tables.Skip(1))
-                    builder.AddSheet(table, s => schema?.Invoke(table, s));
+            foreach (var table in tables.Skip(1))
+                builder.AddSheet(table, s => schema?.Invoke(table, s));
 
-                schema?.Invoke(tables.First(), builder);
-            });
-        }
+            schema?.Invoke(tables.First(), builder);
+        });
+    }
 
-        public static byte[] ToExcel(this DataSet dataSet, Action<DataTable, SchemaBuilder<DataRow>>? schema = null)
-            => ToExcelStream(dataSet, schema).ToArray();
+    public static byte[] ToExcel(this DataSet dataSet, Action<DataTable, SchemaBuilder<DataRow>>? schema = null)
+        => ToExcelStream(dataSet, schema).ToArray();
 
-        public static MemoryStream ToExcelStream(this DataSet dataSet, Action<DataTable, SchemaBuilder<DataRow>>? schema = null)
-        {
-            var ms = new MemoryStream();
-            ToExcel(dataSet, ms, schema);
-            ms.Position = 0;
-            return ms;
-        }
+    public static MemoryStream ToExcelStream(this DataSet dataSet, Action<DataTable, SchemaBuilder<DataRow>>? schema = null)
+    {
+        var ms = new MemoryStream();
+        ToExcel(dataSet, ms, schema);
+        ms.Position = 0;
+        return ms;
     }
 }
