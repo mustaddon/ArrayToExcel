@@ -29,6 +29,7 @@ public class ExcelBuilder
     }
 
     public static bool DefaultWrapText = false;
+    public static bool DefaultDateOnly = false;
 
     static void CreateExcel(Stream stream, IEnumerable<SheetSchema> sheetSchemas)
     {
@@ -72,7 +73,7 @@ public class ExcelBuilder
 
             cols.Append(sheetSchema.Columns.Select((x, i) => new Column() { Min = (uint)(i + 1), Max = (uint)(i + 1), Width = x.Width, CustomWidth = true, BestFit = true }));
 
-            sheetData.Append(GetRows(sheetSchema.Items, sheetSchema.Columns, sheetSchema.WrapText ?? DefaultWrapText));
+            sheetData.Append(GetRows(sheetSchema));
 
             worksheetPart.Worksheet.AppendChild(new AutoFilter() { Reference = $"A1:{GetColReference(sheetSchema.Columns.Count - 1)}{sheetData.ChildElements.Count}" });
         }
@@ -153,14 +154,19 @@ public class ExcelBuilder
         stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 2 }).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top });
         // percentage
         stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { NumberFormatId = 3453 }).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top });
-        
+
         stylesPart.Stylesheet.CellFormats.Count = (uint)stylesPart.Stylesheet.CellFormats.ChildElements.Count;
 
         stylesPart.Stylesheet.Save();
     }
 
-    static IEnumerable<Row> GetRows(IEnumerable items, List<ColumnSchema> columns, bool wrapText)
+    static IEnumerable<Row> GetRows(SheetSchema sheetSchema)
     {
+        var settings = new SheetSettings {
+            WrapText = sheetSchema.WrapText ?? DefaultWrapText,
+            DateOnly = sheetSchema.DateOnly ?? DefaultDateOnly,
+        };
+        var columns = sheetSchema.Columns;
         var headerCells = columns.Select((x, i) => new Cell
         {
             CellReference = GetColReference(i),
@@ -175,32 +181,32 @@ public class ExcelBuilder
         yield return headerRow;
 
         var i = 1u;
-        foreach (var item in items)
+        foreach (var item in sheetSchema.Items)
         {
             var row = new Row() { RowIndex = ++i };
-            row.Append(columns.Select((x, j) => GetCell(i, headerCells[j].CellReference, x.Value?.Invoke(item), wrapText)));
+            row.Append(columns.Select((x, j) => GetCell(i, headerCells[j].CellReference, x.Value?.Invoke(item), settings)));
             yield return row;
         }
     }
 
-    static Cell GetCell(uint rowIndex, string? cellReference, object? value, bool wrapText)
+    static Cell GetCell(uint rowIndex, string? cellReference, object? value, SheetSettings settings)
     {
         var cell = new Cell { CellReference = cellReference };
 
         if (value is ICellValue cellValue)
             cellValue.Apply(cell, rowIndex);
         else if (value is string str)
-            CellText.Apply(cell, str, wrapText);
+            CellText.Apply(cell, str, settings.WrapText);
         else if (value is DateTime dateTime)
-            new CellDate(dateTime).Apply(cell, rowIndex);
+            CellDate.Apply(cell, dateTime, settings.DateOnly);
         else if (value is DateTimeOffset dateTimeOffset)
-            new CellDate(dateTimeOffset).Apply(cell, rowIndex);
+            CellDate.Apply(cell, dateTimeOffset, settings.DateOnly);
 #if NET6_0_OR_GREATER
         else if (value is DateOnly dateOnly)
-            new CellDate(dateOnly).Apply(cell, rowIndex);
+            CellDate.Apply(cell, dateOnly);
 #endif
         else if (value is Uri uri)
-            new CellHyperlink(uri).Apply(cell, rowIndex);
+            CellHyperlink.Apply(cell, uri);
         else
             CellDefault.Apply(cell, value);
 

@@ -8,13 +8,17 @@ public class CellHyperlink(string link, string? text = null) : ICellValue
     public CellHyperlink(Uri link, string? text = null)
         : this(link.ToString(), text ?? link.OriginalString) { }
 
-    public virtual void Apply(Cell cell, uint row)
+    readonly Lazy<string> _format = new(() => Format(link, text));
+
+    public virtual void Apply(Cell cell, uint row) => Apply(cell, _format.Value);
+
+    internal static void Apply(Cell cell, Uri link) => Apply(cell, Format(link.ToString(), link.OriginalString));
+
+    static void Apply(Cell cell, string value)
     {
-        cell.CellFormula = new DocumentFormat.OpenXml.Spreadsheet.CellFormula(_format.Value);
+        cell.CellFormula = new DocumentFormat.OpenXml.Spreadsheet.CellFormula(value);
         cell.StyleIndex = Styles.Hyperlink;
     }
-
-    readonly Lazy<string> _format = new(() => Format(link, text));
 
     static string Format(string link, string? text)
     {

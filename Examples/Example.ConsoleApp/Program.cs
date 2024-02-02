@@ -32,7 +32,7 @@ class Program
     {
         Prop1 = $"Text #{x}",
         Prop2 = x * 1000,
-        Prop3 = DateTime.Now.AddDays(-x),
+        Prop3 = DateOnly.FromDateTime(DateTime.Now.AddDays(-x)),
     });
 
     // default settings
@@ -120,7 +120,7 @@ class Program
     {
         var items = Enumerable.Range(1, 100).Select(x => new
         {
-            String = "  1) text text text; \n2) text text text !!!",
+            String = "1) text text text; \n2) text text text !!!",
             WrapText = new CellText("1) text text text; \n2) text text text", true),
             Bool = x % 2 == 0,
             NullableBool = x % 2 == 0 ? (bool?)true : null,

@@ -5,11 +5,11 @@ namespace ArrayToExcel;
 
 public class CellText(string? value, bool wrapText = false) : ICellValue
 {
-    public virtual void Apply(Cell cell, uint row) => Apply(cell, value, wrapText);
+    public virtual void Apply(Cell cell, uint row) => Apply(cell, value ?? string.Empty, wrapText);
 
-    internal static void Apply(Cell cell, string? value, bool wrapText)
+    internal static void Apply(Cell cell, string value, bool wrapText)
     {
-        cell.InlineString = GetInlineString(value ?? string.Empty);
+        cell.InlineString = GetInlineString(value);
         cell.DataType = CellValues.InlineString;
         cell.StyleIndex = wrapText ? Styles.WrapText : Styles.Default;
     }

@@ -5,37 +5,51 @@ namespace ArrayToExcel;
 
 public class CellDate : ICellValue
 {
-    public CellDate(DateTime? dateTime, bool dateOnly = false)
+    public CellDate(DateTime? value, bool dateOnly = false)
     {
-        _value = dateTime?.ToString(_dateTimeFormat);
-        _dateOnly = dateOnly;
+        _apply = value == null
+            ? x => Apply(x, string.Empty, dateOnly)
+            : x => Apply(x, value.Value, dateOnly);
     }
 
-    public CellDate(DateTimeOffset? dateTime, bool dateOnly = false)
+    public CellDate(DateTimeOffset? value, bool dateOnly = false)
     {
-        _value = dateTime?.ToString(_dateTimeFormat);
-        _dateOnly = dateOnly;
+        _apply = value == null 
+            ? x => Apply(x, string.Empty, dateOnly) 
+            : x => Apply(x, value.Value, dateOnly);
     }
+
+    readonly Action<Cell> _apply;
+
+    public virtual void Apply(Cell cell, uint row) => _apply(cell);
+
+    internal static void Apply(Cell cell, DateTimeOffset value, bool dateOnly)
+        => Apply(cell, value.ToString(_dateTimeFormat), dateOnly);
+
+    internal static void Apply(Cell cell, DateTime value, bool dateOnly)
+        => Apply(cell, value.ToString(_dateTimeFormat), dateOnly);
+
+    static readonly string _dateTimeFormat = "s";
+
+    static void Apply(Cell cell, string value, bool dateOnly)
+    {
+        cell.CellValue = new(value);
+        cell.DataType = CellValues.Date;
+        cell.StyleIndex = dateOnly ? Styles.Date : Styles.DateTime;
+    }
+
 
 #if NET6_0_OR_GREATER
-    public CellDate(DateOnly? date)
+    public CellDate(DateOnly? value)
     {
-        _value = date?.ToString(_dateFormat);
-        _dateOnly = true;
+        _apply = value == null
+            ? x => Apply(x, string.Empty, true)
+            : x => Apply(x, value.Value);
     }
 
     static readonly string _dateFormat = "o";
+
+    internal static void Apply(Cell cell, DateOnly value)
+        => Apply(cell, value.ToString(_dateFormat), true);
 #endif
-
-    static readonly string _dateTimeFormat = "s";
-    readonly string? _value;
-    readonly bool _dateOnly;
-
-    public virtual void Apply(Cell cell, uint row)
-    {
-
-        cell.CellValue = new(_value ?? string.Empty);
-        cell.DataType = CellValues.Date;
-        cell.StyleIndex = _dateOnly ? Styles.Date : Styles.DateTime;
-    }
 }

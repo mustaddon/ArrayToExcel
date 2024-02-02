@@ -32,6 +32,12 @@ namespace ArrayToExcel
             return this;
         }
 
+        public SchemaBuilder<T> DateOnly(bool value)
+        {
+            Schema.DateOnly = value;
+            return this;
+        }
+
         public SchemaBuilder<T> ColumnName(Func<ColumnInfo, string> name)
         {
             foreach (var col in Schema.Columns.Select((x, i) => new ColumnInfo(i, x)))
