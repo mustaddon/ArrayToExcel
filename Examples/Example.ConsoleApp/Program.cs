@@ -20,12 +20,12 @@ class Program
         Example5();
         Example6();
 
+        TestTypes();
         TestDictionary();
         TestExpandoObject();
         TestHashtable();
         TestDataTable();
         TestObject();
-        TestTypes();
     }
 
     static readonly IEnumerable<SomeItem> SomeItems = Enumerable.Range(1, 10).Select(x => new SomeItem
@@ -114,6 +114,35 @@ class Program
         File.WriteAllBytes($@"..\..\..\..\{nameof(Example6)}.xlsx".ToLower(), excel);
     }
 
+
+    // different types + stream
+    static void TestTypes()
+    {
+        var items = Enumerable.Range(1, 100).Select(x => new
+        {
+            String = "1) text text text; \n2) text text text !!!",
+            WrapText = new CellText("1) text text text; \n2) text text text", wrap: true),
+            Bool = x % 2 == 0,
+            NullableBool = x % 2 == 0 ? true : (bool?)null,
+            Int = -x * 100,
+            Uint = (uint)x * 100,
+            Long = (long)x * 100,
+            Double = 1.1d + x,
+            Float = 1.1f + x,
+            Decimal = 1.1m + x,
+            DateTime = DateTime.Now.AddDays(-x),
+            DateTimeOffset = DateTimeOffset.Now.AddDays(-x),
+            Uri = new Uri($"https://www.google.com/search?q={x}"),
+            Hyperlink = new CellHyperlink($"https://www.google.com/search?q={x}", $"link_{x}"),
+            Formula = new CellFormula(row => $"G{row}+H{row}"),
+            Percent = new CellPercent(1d / x),
+        });
+
+
+        using var file = File.Create($@"..\{nameof(TestTypes)}.xlsx");
+        items.ToExcel(file);
+    }
+
     // list of dictionaries 
     static void TestDictionary()
     {
@@ -195,33 +224,5 @@ class Program
             .AddSheet(SomeItems.AsEnumerable<object>().Skip(3))); // extra sheet
 
         File.WriteAllBytes($@"..\{nameof(TestObject)}.xlsx", excel);
-    }
-
-    // different types + stream
-    static void TestTypes()
-    {
-        var items = Enumerable.Range(1, 100).Select(x => new
-        {
-            String = "1) text text text; \n2) text text text !!!",
-            WrapText = new CellText("1) text text text; \n2) text text text", wrap: true),
-            Bool = x % 2 == 0,
-            NullableBool = x % 2 == 0 ? true : (bool?)null,
-            Int = -x * 100,
-            Uint = (uint)x * 100,
-            Long = (long)x * 100,
-            Double = 1.1d + x,
-            Float = 1.1f + x,
-            Decimal = 1.1m + x,
-            DateTime = DateTime.Now.AddDays(-x),
-            DateTimeOffset = DateTimeOffset.Now.AddDays(-x),
-            Uri = new Uri($"https://www.google.com/search?q={x}"),
-            Hyperlink = new CellHyperlink($"https://www.google.com/search?q={x}", $"link_{x}"),
-            Formula = new CellFormula(row => $"G{row}+H{row}"),
-            Percent = new CellPercent(1d / x),
-        });
-
-
-        using var file = File.Create($@"..\{nameof(TestTypes)}.xlsx");
-        items.ToExcel(file);
     }
 }
