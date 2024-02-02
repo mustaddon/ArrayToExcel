@@ -141,17 +141,19 @@ public class ExcelBuilder
         stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat());
         // header style
         stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 1, BorderId = 0, FillId = 2, ApplyFill = true }).AppendChild(new Alignment { Horizontal = HorizontalAlignmentValues.Left, Vertical = VerticalAlignmentValues.Center, WrapText = false });
-        // datetime style
+        // default style
+        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat()).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top, WrapText = false });
+        // wraptext style
+        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat()).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top, WrapText = true });
+        // date style
         stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { ApplyNumberFormat = true, NumberFormatId = 14, FormatId = 0, FontId = 0, BorderId = 0, FillId = 0, ApplyFill = true }).AppendChild(new Alignment { Vertical = VerticalAlignmentValues.Top });
+        // datetime style
+        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { ApplyNumberFormat = true, NumberFormatId = 22, FormatId = 0, FontId = 0, BorderId = 0, FillId = 0, ApplyFill = true }).AppendChild(new Alignment { Vertical = VerticalAlignmentValues.Top });
         // hyperlink style
         stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 2 }).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top });
-        // multiline style
-        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat()).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top, WrapText = true });
         // percentage
         stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { NumberFormatId = 3453 }).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top });
-        // nowrap style
-        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat()).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top, WrapText = false });
-
+        
         stylesPart.Stylesheet.CellFormats.Count = (uint)stylesPart.Stylesheet.CellFormats.ChildElements.Count;
 
         stylesPart.Stylesheet.Save();
@@ -164,7 +166,7 @@ public class ExcelBuilder
             CellReference = GetColReference(i),
             CellValue = new CellValue(x.Name),
             DataType = CellValues.String,
-            StyleIndex = 1,
+            StyleIndex = Styles.Header,
         }).ToArray();
 
         var headerRow = new Row() { RowIndex = 1 };
@@ -189,6 +191,14 @@ public class ExcelBuilder
             cellValue.Apply(cell, rowIndex);
         else if (value is string str)
             CellText.Apply(cell, str, wrapText);
+        else if (value is DateTime dateTime)
+            new CellDate(dateTime).Apply(cell, rowIndex);
+        else if (value is DateTimeOffset dateTimeOffset)
+            new CellDate(dateTimeOffset).Apply(cell, rowIndex);
+#if NET6_0_OR_GREATER
+        else if (value is DateOnly dateOnly)
+            new CellDate(dateOnly).Apply(cell, rowIndex);
+#endif
         else if (value is Uri uri)
             new CellHyperlink(uri).Apply(cell, rowIndex);
         else

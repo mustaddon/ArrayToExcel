@@ -14,32 +14,24 @@ public class CellDefault(object? value) : ICellValue
     {
         cell.CellValue = GetCellValue(value);
         cell.DataType = GetCellType(value);
-        cell.StyleIndex = cell.DataType == CellValues.Date ? 2 : 4u;
+        cell.StyleIndex = Styles.Default;
     }
 
     static CellValue GetCellValue(object? value)
     {
         if (value == null) return new();
 
-        var type = value.GetType();
+        if (value is bool boolVal)
+            return new(_boolVals[boolVal ? 1 : 0]);
 
-        if (type == typeof(bool))
-            return new((bool)value ? _boolVals[1] : _boolVals[0]);
+        if (value is double doubleVal)
+            return new(doubleVal.ToString(_cultureInfo));
 
-        if (type == typeof(DateTime))
-            return new(((DateTime)value).ToString(_dateFormat, _cultureInfo));
+        if (value is decimal decimalVal)
+            return new(decimalVal.ToString(_cultureInfo));
 
-        if (type == typeof(DateTimeOffset))
-            return new(((DateTimeOffset)value).ToString(_dateFormat, _cultureInfo));
-
-        if (type == typeof(double))
-            return new(((double)value).ToString(_cultureInfo));
-
-        if (type == typeof(decimal))
-            return new(((decimal)value).ToString(_cultureInfo));
-
-        if (type == typeof(float))
-            return new(((float)value).ToString(_cultureInfo));
+        if (value is float floatVal)
+            return new(floatVal.ToString(_cultureInfo));
 
         return new(NormCellText(value.ToString()!));
     }
@@ -52,16 +44,14 @@ public class CellDefault(object? value) : ICellValue
 
     static CellValues GetCellType(object? value)
     {
-        var type = value?.GetType() ?? typeof(object);
+        if (value == null)
+            return CellValues.String;
 
-        if (type == typeof(bool))
+        if (value is bool)
             return CellValues.Boolean;
 
-        if (_numericTypes.Contains(type))
+        if (_numericTypes.Contains(value.GetType()))
             return CellValues.Number;
-
-        if (type == typeof(DateTime) || type == typeof(DateTimeOffset))
-            return CellValues.Date;
 
         return CellValues.String;
     }
@@ -78,7 +68,6 @@ public class CellDefault(object? value) : ICellValue
         typeof(float)];
 
     static readonly CultureInfo _cultureInfo = CultureInfo.GetCultureInfo("en-US");
-    static readonly string _dateFormat = "s";
     static readonly string[] _boolVals = ["0", "1"];
 
     const int _maxCellText = 32767;

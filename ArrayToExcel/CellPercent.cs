@@ -7,6 +7,6 @@ public class CellPercent(object? value) : CellDefault(value)
     public override void Apply(Cell cell, uint row)
     {
         base.Apply(cell, row);
-        cell.StyleIndex = 5;
+        cell.StyleIndex = Styles.Percentage;
     }
 }

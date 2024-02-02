@@ -11,7 +11,7 @@ public class CellHyperlink(string link, string? text = null) : ICellValue
     public virtual void Apply(Cell cell, uint row)
     {
         cell.CellFormula = new DocumentFormat.OpenXml.Spreadsheet.CellFormula(_format.Value);
-        cell.StyleIndex = 3;
+        cell.StyleIndex = Styles.Hyperlink;
     }
 
     readonly Lazy<string> _format = new(() => Format(link, text));

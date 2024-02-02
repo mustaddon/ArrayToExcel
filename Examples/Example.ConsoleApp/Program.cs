@@ -120,16 +120,17 @@ class Program
     {
         var items = Enumerable.Range(1, 100).Select(x => new
         {
-            String = "1) text text text; \n2) text text text !!!",
-            WrapText = new CellText("1) text text text; \n2) text text text", wrap: true),
+            String = "  1) text text text; \n2) text text text !!!",
+            WrapText = new CellText("1) text text text; \n2) text text text", true),
             Bool = x % 2 == 0,
-            NullableBool = x % 2 == 0 ? true : (bool?)null,
+            NullableBool = x % 2 == 0 ? (bool?)true : null,
             Int = -x * 100,
             Uint = (uint)x * 100,
             Long = (long)x * 100,
             Double = 1.1d + x,
             Float = 1.1f + x,
             Decimal = 1.1m + x,
+            DateOnly = DateOnly.FromDateTime(DateTime.Now.AddDays(-x)),
             DateTime = DateTime.Now.AddDays(-x),
             DateTimeOffset = DateTimeOffset.Now.AddDays(-x),
             Uri = new Uri($"https://www.google.com/search?q={x}"),
