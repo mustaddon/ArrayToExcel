@@ -46,7 +46,7 @@ Result:
 ### Example 4: Custom column's mapping
 ```C#
 var excel = items.ToExcel(schema => schema
-    .AddColumn("MyColumnName#1", x => new Hyperlink($"https://www.google.com/search?q={x.Prop1}", x.Prop1))
+    .AddColumn("MyColumnName#1", x => new CellHyperlink($"https://www.google.com/search?q={x.Prop1}", x.Prop1))
     .AddColumn("MyColumnName#2", x => $"test:{x.Prop2}")
     .AddColumn("MyColumnName#3", x => x.Prop3));
 ```

@@ -5,7 +5,6 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -173,11 +172,11 @@ public class ExcelBuilder
 
         yield return headerRow;
 
-        var i = 2u;
+        var i = 1u;
         foreach (var item in items)
         {
-            var row = new Row() { RowIndex = i++ };
-            row.Append(columns.Select((x, i) => GetCell(row.RowIndex, headerCells[i].CellReference, x.Value?.Invoke(item), wrapText)));
+            var row = new Row() { RowIndex = ++i };
+            row.Append(columns.Select((x, j) => GetCell(i, headerCells[j].CellReference, x.Value?.Invoke(item), wrapText)));
             yield return row;
         }
     }
@@ -186,103 +185,16 @@ public class ExcelBuilder
     {
         var cell = new Cell { CellReference = cellReference };
 
-        if (value is string str)
-        {
-            cell.InlineString = GetInlineString(str);
-            cell.DataType = CellValues.InlineString;
-            cell.StyleIndex = wrapText ? 4 : 6u;
-        }
-        else if (value is Text text)
-        {
-            cell.InlineString = GetInlineString(text.Value ?? string.Empty);
-            cell.DataType = CellValues.InlineString;
-            cell.StyleIndex = text.Wrap ? 4 : 6u;
-        }
-        else if (value is Formula formula)
-        {
-            cell.CellFormula = new CellFormula(formula.RowText(rowIndex));
-            cell.StyleIndex = 4;
-        }
-        else if (value is Hyperlink hyperlink)
-        {
-            cell.CellFormula = new CellFormula(hyperlink.ToString());
-            cell.StyleIndex = 3;
-        }
+        if (value is ICellValue cellValue)
+            cellValue.Apply(cell, rowIndex);
+        else if (value is string str)
+            CellText.Apply(cell, str, wrapText);
         else if (value is Uri uri)
-        {
-            cell.CellFormula = new CellFormula(new Hyperlink(uri).ToString());
-            cell.StyleIndex = 3;
-        }
-        else if (value is Percent percent)
-        {
-            cell.CellValue = GetCellValue(percent.Value);
-            cell.DataType = GetCellType(percent.Value);
-            cell.StyleIndex = 5;
-        }
+            new CellHyperlink(uri).Apply(cell, rowIndex);
         else
-        {
-            cell.CellValue = GetCellValue(value);
-            cell.DataType = GetCellType(value);
-            cell.StyleIndex = cell.DataType == CellValues.Date ? 2 : 4u;
-        }
+            CellDefault.Apply(cell, value);
 
         return cell;
-    }
-
-    static CellValue GetCellValue(object? value)
-    {
-        if (value == null) return new();
-
-        var type = value.GetType();
-
-        if (type == typeof(bool))
-            return new((bool)value ? "1" : "0");
-
-        if (type == typeof(DateTime))
-            return new(((DateTime)value).ToString("s", _cultureInfo));
-
-        if (type == typeof(DateTimeOffset))
-            return new(((DateTimeOffset)value).ToString("s", _cultureInfo));
-
-        if (type == typeof(double))
-            return new(((double)value).ToString(_cultureInfo));
-
-        if (type == typeof(decimal))
-            return new(((decimal)value).ToString(_cultureInfo));
-
-        if (type == typeof(float))
-            return new(((float)value).ToString(_cultureInfo));
-
-        return new(NormCellText(value.ToString()!));
-    }
-
-    static InlineString GetInlineString(string value)
-    {
-        return new InlineString(new DocumentFormat.OpenXml.Spreadsheet.Text(NormCellText(value))
-        {
-            Space = SpaceProcessingModeValues.Preserve
-        });
-    }
-
-    static string NormCellText(string value)
-    {
-        return RegularExpressions.InvalidXmlChars().Replace(value.Length > _maxCellText ? value.Substring(0, _maxCellText) : value, string.Empty);
-    }
-
-    static CellValues GetCellType(object? value)
-    {
-        var type = value?.GetType() ?? typeof(object);
-
-        if (type == typeof(bool))
-            return CellValues.Boolean;
-
-        if (_numericTypes.Contains(type))
-            return CellValues.Number;
-
-        if (type == typeof(DateTime) || type == typeof(DateTimeOffset))
-            return CellValues.Date;
-
-        return CellValues.String;
     }
 
     static string GetColReference(int index)
@@ -299,22 +211,7 @@ public class ExcelBuilder
         return new string([.. result]);
     }
 
-    static readonly HashSet<Type> _numericTypes = [
-        typeof(short),
-        typeof(ushort),
-        typeof(int),
-        typeof(uint),
-        typeof(long),
-        typeof(ulong),
-        typeof(double),
-        typeof(decimal),
-        typeof(float)];
-
-    static readonly CultureInfo _cultureInfo = CultureInfo.GetCultureInfo("en-US");
-
     static readonly string _digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     const int _maxSheetName = 31;
-
-    const int _maxCellText = 32767;
 }

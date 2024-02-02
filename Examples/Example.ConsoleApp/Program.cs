@@ -66,7 +66,7 @@ class Program
     static void Example4()
     {
         var excel = SomeItems.ToExcel(schema => schema
-            .AddColumn("MyColumnName#1", x => new Hyperlink($"https://www.google.com/search?q={x.Prop1}", x.Prop1))
+            .AddColumn("MyColumnName#1", x => new CellHyperlink($"https://www.google.com/search?q={x.Prop1}", x.Prop1))
             .AddColumn("MyColumnName#2", x => $"test:{x.Prop2}")
             .AddColumn("MyColumnName#3", x => x.Prop3));
 
@@ -203,7 +203,7 @@ class Program
         var items = Enumerable.Range(1, 100).Select(x => new
         {
             String = "1) text text text; \n2) text text text !!!",
-            WrapText = new Text("1) text text text; \n2) text text text", wrap: true),
+            WrapText = new CellText("1) text text text; \n2) text text text", wrap: true),
             Bool = x % 2 == 0,
             NullableBool = x % 2 == 0 ? true : (bool?)null,
             Int = -x * 100,
@@ -215,9 +215,9 @@ class Program
             DateTime = DateTime.Now.AddDays(-x),
             DateTimeOffset = DateTimeOffset.Now.AddDays(-x),
             Uri = new Uri($"https://www.google.com/search?q={x}"),
-            Hyperlink = new Hyperlink($"https://www.google.com/search?q={x}", $"link_{x}"),
-            Formula = new Formula(r => $"G{r}+H{r}"),
-            Percent = new Percent(1d/x),
+            Hyperlink = new CellHyperlink($"https://www.google.com/search?q={x}", $"link_{x}"),
+            Formula = new CellFormula(row => $"G{row}+H{row}"),
+            Percent = new CellPercent(1d / x),
         });
 
 
