@@ -5,7 +5,7 @@ namespace ArrayToExcel;
 
 public class CellText(string? value, bool wrap = false) : ICellValue
 {
-    public void Apply(Cell cell, uint row) => Apply(cell, value, wrap);
+    public virtual void Apply(Cell cell, uint row) => Apply(cell, value, wrap);
 
     internal static void Apply(Cell cell, string? value, bool wrap)
     {

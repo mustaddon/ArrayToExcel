@@ -2,12 +2,11 @@
 
 namespace ArrayToExcel;
 
-public class CellPercent(object? value) : ICellValue
+public class CellPercent(object? value) : CellDefault(value)
 {
-    public void Apply(Cell cell, uint row)
+    public override void Apply(Cell cell, uint row)
     {
-        cell.CellValue = CellDefault.GetCellValue(value);
-        cell.DataType = CellDefault.GetCellType(value);
+        base.Apply(cell, row);
         cell.StyleIndex = 5;
     }
 }

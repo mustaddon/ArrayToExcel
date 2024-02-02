@@ -8,7 +8,7 @@ public class CellHyperlink(string link, string? text = null) : ICellValue
     public CellHyperlink(Uri link, string? text = null)
         : this(link.ToString(), text ?? link.OriginalString) { }
 
-    public void Apply(Cell cell, uint row)
+    public virtual void Apply(Cell cell, uint row)
     {
         cell.CellFormula = new DocumentFormat.OpenXml.Spreadsheet.CellFormula(_format.Value);
         cell.StyleIndex = 3;

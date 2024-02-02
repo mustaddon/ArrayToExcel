@@ -8,7 +8,7 @@ namespace ArrayToExcel;
 
 public class CellDefault(object? value) : ICellValue
 {
-    public void Apply(Cell cell, uint row) => Apply(cell, value);
+    public virtual void Apply(Cell cell, uint row) => Apply(cell, value);
 
     internal static void Apply(Cell cell, object? value)
     {
@@ -17,7 +17,7 @@ public class CellDefault(object? value) : ICellValue
         cell.StyleIndex = cell.DataType == CellValues.Date ? 2 : 4u;
     }
 
-    internal static CellValue GetCellValue(object? value)
+    static CellValue GetCellValue(object? value)
     {
         if (value == null) return new();
 
@@ -50,7 +50,7 @@ public class CellDefault(object? value) : ICellValue
         return RegularExpressions.InvalidXmlChars().Replace(value.Length > _maxCellText ? value.Substring(0, _maxCellText) : value, string.Empty);
     }
 
-    internal static CellValues GetCellType(object? value)
+    static CellValues GetCellType(object? value)
     {
         var type = value?.GetType() ?? typeof(object);
 
