@@ -8,5 +8,5 @@ public static class Styles
     public static readonly uint Date = 4;
     public static readonly uint DateTime = 5;
     public static readonly uint Hyperlink = 6;
-    public static readonly uint Percentage = 7;
+    public static readonly uint Percent = 7;
 }
