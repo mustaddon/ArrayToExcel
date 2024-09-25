@@ -130,7 +130,7 @@ class Program
             Double = 1.1d + x,
             Float = 1.1f + x,
             Decimal = 1.1m + x,
-            DateOnly = DateOnly.FromDateTime(DateTime.Now.AddDays(-x)),
+            DateOnly = DateOnly.FromDateTime(DateTime.Today.AddDays(-x)),
             DateTime = DateTime.Now.AddDays(-x),
             DateTimeOffset = DateTimeOffset.Now.AddDays(-x),
             Uri = new Uri($"https://www.google.com/search?q={x}"),
