@@ -3,7 +3,6 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -36,9 +35,9 @@ public class ExcelBuilder
         using var document = SpreadsheetDocument.Create(stream, SpreadsheetDocumentType.Workbook);
 
         var workbookpart = document.AddWorkbookPart();
-        workbookpart.Workbook = new Workbook();
-
-        var sheets = workbookpart.Workbook.AppendChild(new Sheets());
+        var workbook = workbookpart.Workbook = new();
+        var sheets = workbook.Sheets = new();
+        var definedNames = workbook.DefinedNames = new();
 
         AddStyles(workbookpart);
 
@@ -50,7 +49,10 @@ public class ExcelBuilder
             sheetId++;
 
             var worksheetPart = workbookpart.AddNewPart<WorksheetPart>();
-            worksheetPart.Worksheet = new Worksheet();
+            var worksheet = worksheetPart.Worksheet = new();
+            var dimension = worksheet.SheetDimension = new() { Reference = "A1" };
+            var cols = worksheet.AppendChild(new Columns());
+            var sheetData = worksheet.AppendChild(new SheetData());
 
             var sheet = new Sheet()
             {
@@ -62,9 +64,6 @@ public class ExcelBuilder
             sheetNames.Add(sheet.Name.Value ?? string.Empty);
             sheets.AppendChild(sheet);
 
-            var cols = worksheetPart.Worksheet.AppendChild(new Columns());
-            var sheetData = worksheetPart.Worksheet.AppendChild(new SheetData());
-
             if (sheetSchema.Columns.Count == 0)
             {
                 cols.AppendChild(new Column() { Min = 1, Max = 1, BestFit = true });
@@ -75,10 +74,12 @@ public class ExcelBuilder
 
             sheetData.Append(GetRows(sheetSchema));
 
-            worksheetPart.Worksheet.AppendChild(new AutoFilter() { Reference = $"A1:{GetColReference(sheetSchema.Columns.Count - 1)}{sheetData.ChildElements.Count}" });
+            dimension.Reference = $"A1:{GetColReference(sheetSchema.Columns.Count - 1)}{sheetData.ChildElements.Count}";
+            worksheet.AppendChild(new AutoFilter() { Reference = $"A1:{GetColReference(sheetSchema.Columns.Count - 1)}1" });
+            definedNames.AppendChild(new DefinedName($"'{sheet.Name.Value!.Replace("'", "''")}'!$A$1:${GetColReference(sheetSchema.Columns.Count - 1)}$1") { Name = "_xlnm._FilterDatabase", LocalSheetId = sheetId - 1, Hidden = true });
         }
 
-        workbookpart.Workbook.Save();
+        workbook.Save();
     }
 
     static string NormSheetName(string? value, uint sheetId, HashSet<string> existNames)
@@ -97,20 +98,20 @@ public class ExcelBuilder
     static void AddStyles(WorkbookPart workbookPart)
     {
         var stylesPart = workbookPart.AddNewPart<WorkbookStylesPart>();
-        stylesPart.Stylesheet = new Stylesheet();
+        var stylesheet = stylesPart.Stylesheet = new();
 
         // fonts
-        stylesPart.Stylesheet.Fonts = new Fonts();
-        stylesPart.Stylesheet.Fonts.AppendChild(new Font());
-        stylesPart.Stylesheet.Fonts.AppendChild(new Font(new Bold(), new Color() { Rgb = HexBinaryValue.FromString("FFFFFFFF") }));
-        stylesPart.Stylesheet.Fonts.AppendChild(new Font(new Underline(), new Color() { Theme = 10U }));
-        stylesPart.Stylesheet.Fonts.Count = (uint)stylesPart.Stylesheet.Fonts.ChildElements.Count;
+        var fonts = stylesheet.Fonts = new();
+        fonts.AppendChild(new Font());
+        fonts.AppendChild(new Font(new Bold(), new Color() { Rgb = HexBinaryValue.FromString("FFFFFFFF") }));
+        fonts.AppendChild(new Font(new Underline(), new Color() { Theme = 10U }));
+        fonts.Count = (uint)fonts.ChildElements.Count;
 
         // fills
-        stylesPart.Stylesheet.Fills = new Fills();
-        stylesPart.Stylesheet.Fills.AppendChild(new Fill { PatternFill = new PatternFill { PatternType = PatternValues.None } }); // required, reserved by Excel
-        stylesPart.Stylesheet.Fills.AppendChild(new Fill { PatternFill = new PatternFill { PatternType = PatternValues.Gray125 } }); // required, reserved by Excel
-        stylesPart.Stylesheet.Fills.AppendChild(new Fill
+        var fills = stylesheet.Fills = new();
+        fills.AppendChild(new Fill { PatternFill = new PatternFill { PatternType = PatternValues.None } }); // required, reserved by Excel
+        fills.AppendChild(new Fill { PatternFill = new PatternFill { PatternType = PatternValues.Gray125 } }); // required, reserved by Excel
+        fills.AppendChild(new Fill
         {
             PatternFill = new PatternFill()
             {
@@ -119,64 +120,65 @@ public class ExcelBuilder
                 BackgroundColor = new BackgroundColor { Indexed = 64 },
             },
         });
-        stylesPart.Stylesheet.Fills.Count = (uint)stylesPart.Stylesheet.Fills.ChildElements.Count;
+        fills.Count = (uint)fills.ChildElements.Count;
 
         // borders
-        stylesPart.Stylesheet.Borders = new Borders();
-        stylesPart.Stylesheet.Borders.AppendChild(new Border());
-        stylesPart.Stylesheet.Borders.Count = (uint)stylesPart.Stylesheet.Borders.ChildElements.Count;
+        var borders = stylesheet.Borders = new();
+        borders.AppendChild(new Border());
+        borders.Count = (uint)borders.ChildElements.Count;
 
         // NumberingFormats
         //uint iExcelIndex = 164;
-        stylesPart.Stylesheet.NumberingFormats = new NumberingFormats();
-        stylesPart.Stylesheet.NumberingFormats.AddChild(new NumberingFormat { NumberFormatId = 3453, FormatCode = "0.00%" });
-        stylesPart.Stylesheet.NumberingFormats.Count = (uint)stylesPart.Stylesheet.NumberingFormats.ChildElements.Count;
+        var numberingFormats = stylesheet.NumberingFormats = new NumberingFormats();
+        numberingFormats.AddChild(new NumberingFormat { NumberFormatId = 3453, FormatCode = "0.00%" });
+        numberingFormats.Count = (uint)numberingFormats.ChildElements.Count;
 
         // cell style formats
-        stylesPart.Stylesheet.CellStyleFormats = new CellStyleFormats();
-        stylesPart.Stylesheet.CellStyleFormats.AppendChild(new CellFormat());
-        stylesPart.Stylesheet.CellStyleFormats.Count = 1;
+        stylesheet.CellStyleFormats = new();
+        stylesheet.CellStyleFormats.AppendChild(new CellFormat());
+        stylesheet.CellStyleFormats.Count = 1;
 
         // cell styles
-        stylesPart.Stylesheet.CellFormats = new CellFormats();
-        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat());
+        var cellFormats = stylesheet.CellFormats = new();
+        cellFormats.AppendChild(new CellFormat());
         // header style
-        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 1, BorderId = 0, FillId = 2, ApplyFill = true }).AppendChild(new Alignment { Horizontal = HorizontalAlignmentValues.Left, Vertical = VerticalAlignmentValues.Center, WrapText = false });
+        cellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 1, BorderId = 0, FillId = 2, ApplyFill = true }).AppendChild(new Alignment { Horizontal = HorizontalAlignmentValues.Left, Vertical = VerticalAlignmentValues.Center, WrapText = false });
         // default style
-        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat()).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top, WrapText = false });
+        cellFormats.AppendChild(new CellFormat()).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top, WrapText = false });
         // wraptext style
-        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat()).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top, WrapText = true });
+        cellFormats.AppendChild(new CellFormat()).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top, WrapText = true });
         // date style
-        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { ApplyNumberFormat = true, NumberFormatId = 14, FormatId = 0, FontId = 0, BorderId = 0, FillId = 0, ApplyFill = true }).AppendChild(new Alignment { Vertical = VerticalAlignmentValues.Top });
+        cellFormats.AppendChild(new CellFormat { ApplyNumberFormat = true, NumberFormatId = 14, FormatId = 0, FontId = 0, BorderId = 0, FillId = 0, ApplyFill = true }).AppendChild(new Alignment { Vertical = VerticalAlignmentValues.Top });
         // datetime style
-        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { ApplyNumberFormat = true, NumberFormatId = 22, FormatId = 0, FontId = 0, BorderId = 0, FillId = 0, ApplyFill = true }).AppendChild(new Alignment { Vertical = VerticalAlignmentValues.Top });
+        cellFormats.AppendChild(new CellFormat { ApplyNumberFormat = true, NumberFormatId = 22, FormatId = 0, FontId = 0, BorderId = 0, FillId = 0, ApplyFill = true }).AppendChild(new Alignment { Vertical = VerticalAlignmentValues.Top });
         // hyperlink style
-        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 2 }).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top });
+        cellFormats.AppendChild(new CellFormat { FormatId = 0, FontId = 2 }).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top });
         // percentage style
-        stylesPart.Stylesheet.CellFormats.AppendChild(new CellFormat { NumberFormatId = 3453 }).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top });
+        cellFormats.AppendChild(new CellFormat { NumberFormatId = 3453 }).AppendChild(new Alignment() { Vertical = VerticalAlignmentValues.Top });
 
-        stylesPart.Stylesheet.CellFormats.Count = (uint)stylesPart.Stylesheet.CellFormats.ChildElements.Count;
+        cellFormats.Count = (uint)cellFormats.ChildElements.Count;
 
-        stylesPart.Stylesheet.Save();
+        //stylesheet.Save();
     }
 
     static IEnumerable<Row> GetRows(SheetSchema sheetSchema)
     {
-        var settings = new SheetSettings {
+        var settings = new SheetSettings
+        {
             WrapText = sheetSchema.WrapText ?? DefaultWrapText,
             DateOnly = sheetSchema.DateOnly ?? DefaultDateOnly,
         };
         var columns = sheetSchema.Columns;
-        var headerCells = columns.Select((x, i) => new Cell
+
+        var headerRow = new Row() { RowIndex = 1 };
+
+        headerRow.Append(columns.Select((x, i) => new Cell
         {
-            CellReference = GetColReference(i),
+            CellReference = GetColReference(i) + "1",
             CellValue = new CellValue(x.Name),
             DataType = CellValues.String,
             StyleIndex = Styles.Header,
-        }).ToArray();
-
-        var headerRow = new Row() { RowIndex = 1 };
-        headerRow.Append(headerCells);
+        }));
 
         yield return headerRow;
 
@@ -184,7 +186,7 @@ public class ExcelBuilder
         foreach (var item in sheetSchema.Items)
         {
             var row = new Row() { RowIndex = ++i };
-            row.Append(columns.Select((x, j) => GetCell(i, headerCells[j].CellReference, x.Value?.Invoke(item), settings)));
+            row.Append(columns.Select((x, j) => GetCell(i, GetColReference(j) + i, x.Value?.Invoke(item), settings)));
             yield return row;
         }
     }
