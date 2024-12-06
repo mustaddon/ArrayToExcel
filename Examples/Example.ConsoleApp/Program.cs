@@ -28,6 +28,36 @@ class Program
         TestObject();
     }
 
+
+    // different types + stream
+    static void TestTypes()
+    {
+        var items = Enumerable.Range(1, 100).Select(x => new
+        {
+            String = "1) text text text; \n2) text text text !!!",
+            WrapText = new CellText("1) text text text; \n2) text text text", true),
+            Uri = new Uri($"https://www.google.com/search?q={x}"),
+            Hyperlink = new CellHyperlink($"https://www.google.com/search?q={x}", $"link_{x}"),
+            Formula = new CellFormula(row => $"L{row}+O{row}"),
+            Percent = new CellPercent(1d / x),
+            DateOnly = DateOnly.FromDateTime(DateTime.Today.AddDays(-x)),
+            DateTime = DateTime.Now.AddDays(-x),
+            DateTimeOffset = DateTimeOffset.Now.AddDays(-x),
+            Bool = x % 2 == 0,
+            NullableBool = x % 2 == 0 ? (bool?)true : null,
+            Int = -x * 100,
+            Uint = (uint)x * 100,
+            Long = (long)x * 100,
+            Double = 1.1d + x,
+            Float = 1.1f + x,
+            Decimal = 1.1m + x,
+        });
+
+
+        using var file = File.Create($@"..\{nameof(TestTypes)}.xlsx");
+        items.ToExcel(file);
+    }
+
     static readonly IEnumerable<SomeItem> SomeItems = Enumerable.Range(1, 10).Select(x => new SomeItem
     {
         Prop1 = $"Text #{x}",
@@ -112,36 +142,6 @@ class Program
         var excel = dataSet.ToExcel();
 
         File.WriteAllBytes($@"..\..\..\..\{nameof(Example6)}.xlsx".ToLower(), excel);
-    }
-
-
-    // different types + stream
-    static void TestTypes()
-    {
-        var items = Enumerable.Range(1, 100).Select(x => new
-        {
-            String = "1) text text text; \n2) text text text !!!",
-            WrapText = new CellText("1) text text text; \n2) text text text", true),
-            Bool = x % 2 == 0,
-            NullableBool = x % 2 == 0 ? (bool?)true : null,
-            Int = -x * 100,
-            Uint = (uint)x * 100,
-            Long = (long)x * 100,
-            Double = 1.1d + x,
-            Float = 1.1f + x,
-            Decimal = 1.1m + x,
-            DateOnly = DateOnly.FromDateTime(DateTime.Today.AddDays(-x)),
-            DateTime = DateTime.Now.AddDays(-x),
-            DateTimeOffset = DateTimeOffset.Now.AddDays(-x),
-            Uri = new Uri($"https://www.google.com/search?q={x}"),
-            Hyperlink = new CellHyperlink($"https://www.google.com/search?q={x}", $"link_{x}"),
-            Formula = new CellFormula(row => $"G{row}+H{row}"),
-            Percent = new CellPercent(1d / x),
-        });
-
-
-        using var file = File.Create($@"..\{nameof(TestTypes)}.xlsx");
-        items.ToExcel(file);
     }
 
     // list of dictionaries 
