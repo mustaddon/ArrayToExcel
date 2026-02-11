@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard2.0;net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net45;netstandard2.0;net6.0;net8.0;net10.0</TargetFrameworks>
 	<LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\ArrayToExcel.snk</AssemblyOriginatorKeyFile>
-	<AssemblyVersion>2.5.0</AssemblyVersion>
-    <FileVersion>2.5.0</FileVersion>
-    <Version>2.5.0</Version>
+	<AssemblyVersion>2.5.1</AssemblyVersion>
+    <FileVersion>2.5.1</FileVersion>
+    <Version>2.5.1</Version>
 	<Company></Company>
     <Authors>Leonid Salavatov</Authors>
-    <Copyright>Leonid Salavatov 2024</Copyright>
+    <Copyright>Leonid Salavatov 2026</Copyright>
     <PackageId>ArrayToExcel</PackageId>
     <Product>ArrayToExcel</Product>
     <Title>ArrayToExcel</Title>
@@ -28,7 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DocumentFormat.OpenXml" Version="3.2.0" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.4.1" />
   </ItemGroup>
 
 </Project>
